@@ -102,8 +102,18 @@ select:focus, input:focus { border-color: var(--primary); }
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-bottom: 16px; flex-wrap: wrap;
 }
-.day-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
-.day-title input[type="date"] { font-weight: 400; }
+.day-title {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  font-size: 16px; font-weight: 600; min-width: 0;
+  position: relative; cursor: pointer;
+}
+/* 原生日期框与文字标签信息重复：缩成 1px 透明但保持"已渲染"
+   （showPicker 要求元素在渲染树里），点日期文字唤起系统日期选择器 */
+.day-title input[type="date"] {
+  position: absolute; left: 50%; width: 1px; height: 1px;
+  opacity: 0; border: 0; padding: 0; font-weight: 400;
+}
+#day-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* 日程列表 */
 .event-list { display: flex; flex-direction: column; gap: 10px; }
@@ -591,16 +601,6 @@ body.local-mode #icon-msg { display: none !important; }
   #day-prev, #day-next { font-size: 0; padding: 8px 13px; flex-shrink: 0; }
   #day-prev::before { content: "‹"; font-size: 18px; line-height: 1; }
   #day-next::before { content: "›"; font-size: 18px; line-height: 1; }
-  .day-title {
-    flex: 1; justify-content: center; gap: 0; min-width: 0;
-    position: relative; cursor: pointer;
-  }
-  /* 输入框缩成 1px 透明但保持"已渲染"（showPicker 要求元素在渲染树里） */
-  .day-title input[type="date"] {
-    position: absolute; left: 50%; width: 1px; height: 1px;
-    opacity: 0; border: 0; padding: 0;
-  }
-  #day-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* 底部标签栏：窄屏时把四个视图标签固定到屏幕底部（桌面端不受影响）。
      注意：topbar 的 backdrop-filter 会让 fixed 子元素以 topbar 为定位基准，
