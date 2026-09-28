@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#4f6ef7">
+  <title>日程助手</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="tabs">
+      <button class="tab active" data-view="day" title="今天">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span data-i18n="tab_day">今天</span>
+      </button>
+      <button class="tab" data-view="lt" title="长期任务">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <span data-i18n="tab_long">长期任务</span>
+      </button>
+      <button class="tab" data-view="ai" title="AI 助手">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span data-i18n="tab_ai">AI 助手</span>
+      </button>
+      <button class="tab" data-view="air" title="AI 分析">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span data-i18n="tab_air">AI 分析</span>
+      </button>
+    </div>
+    <button id="btn-settings" class="icon-btn" title="设置" aria-label="设置">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+    <button id="btn-new" class="btn primary" data-i18n="btn_new">＋ 新建日程</button>
+  </header>
+
+  <div class="filters">
+    <div class="filter-right">
+      <select id="priority-filter">
+        <option value="全部" data-i18n="pri_all">全部优先级</option>
+        <option value="高" data-i18n="pri_high">🔴 高</option>
+        <option value="中" data-i18n="pri_med">🟡 中</option>
+        <option value="低" data-i18n="pri_low">🟢 低</option>
+      </select>
+      <label class="toggle"><input type="checkbox" id="hide-done"> <span data-i18n="hide_done">隐藏已完成</span></label>
+    </div>
+  </div>
+
+  <main>
+    <!-- 日视图 -->
+    <section id="view-day" class="view">
+      <div class="day-nav">
+        <button id="day-prev" class="btn ghost" data-i18n="day_prev">‹ 前一天</button>
+        <div class="day-title">
+          <input type="date" id="day-picker">
+          <span id="day-label"></span>
+        </div>
+        <button id="day-next" class="btn ghost" data-i18n="day_next">后一天 ›</button>
+      </div>
+      <div id="day-list" class="event-list"></div>
+    </section>
+
+    <!-- 长期任务视图 -->
+    <section id="view-lt" class="view hidden">
+      <form id="lt-form" class="lt-form">
+        <input type="text" id="lt-title" maxlength="100" required data-i18n-ph="ph_lt_title" placeholder="要长期坚持的目标…">
+        <span class="ddl-pick">
+          <input type="date" id="lt-deadline" class="ddl-input">
+          <button type="button" class="ddl-btn">📅 <span class="ddl-text" data-i18n="ddl_label">截止日期</span></button>
+          <button type="button" class="ddl-clear hidden">✕</button>
+        </span>
+        <button type="submit" class="btn primary" data-i18n="lt_add">添加</button>
+      </form>
+      <div id="lt-list" class="lt-grid"></div>
+    </section>
+
+    <!-- AI 助手视图 -->
+    <section id="view-ai" class="view hidden">
+      <div id="ai-chat" class="ai-chat">
+        <div class="ai-msg ai-assistant"><div class="ai-bubble"></div></div>
+      </div>
+      <div class="ai-hints" id="ai-hints"></div>
+      <form id="ai-form" class="ai-input-row">
+        <input type="text" id="ai-input" maxlength="2000" autocomplete="off" data-i18n-ph="ph_ai" placeholder="用一句话告诉我你的安排，比如：明天下午3点提醒我开会">
+        <button type="submit" class="btn primary" data-i18n="ai_send">发送</button>
+      </form>
+    </section>
+
+    <!-- AI 分析视图 -->
+    <section id="view-air" class="view hidden">
+      <div class="air-top">
+        <div class="air-scopes" id="air-scopes">
+          <button type="button" class="chip air-scope" data-scope="week" data-i18n="air_sc_w">周分析</button>
+          <button type="button" class="chip air-scope active" data-scope="month" data-i18n="air_sc_m">月分析</button>
+          <button type="button" class="chip air-scope" data-scope="longterm" data-i18n="air_sc_l">长期分析</button>
+        </div>
+        <button id="btn-analyze" class="btn primary" data-i18n="air_start">开始分析</button>
+        <span id="air-error" class="air-error hidden"></span>
+      </div>
+      <div id="air-result" class="hidden">
+        <div class="panel air-summary-panel">
+          <h3 data-i18n="air_summary">总体评价</h3>
+          <div id="air-summary" class="air-summary"></div>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card"><div class="num" id="air-st-1">0</div><div class="cap" id="air-cap-1" data-i18n="cap_total">全部日程</div></div>
+          <div class="stat-card"><div class="num" id="air-st-2">0</div><div class="cap" id="air-cap-2" data-i18n="cap_done">已完成</div></div>
+          <div class="stat-card"><div class="num" id="air-st-3">0</div><div class="cap" id="air-cap-3" data-i18n="cap_pending">待办中</div></div>
+          <div class="stat-card"><div class="num" id="air-st-4">0</div><div class="cap" id="air-cap-4" data-i18n="cap_overdue">逾期子任务</div></div>
+        </div>
+        <div class="air-grid">
+          <div class="panel">
+            <h3 data-i18n="air_heatmap">近 90 天完成热力图</h3>
+            <div id="air-heatmap" class="air-heatmap"></div>
+            <div class="hm-legend"><span data-i18n="hm_less">少</span>
+              <span class="hm-cell" data-l="0"></span><span class="hm-cell" data-l="1"></span>
+              <span class="hm-cell" data-l="2"></span><span class="hm-cell" data-l="3"></span>
+              <span data-i18n="hm_more">多</span>
+            </div>
+          </div>
+          <div class="panel air-rate-panel">
+            <h3 data-i18n="air_rate">完成率</h3>
+            <div class="air-donut" id="air-donut"><div class="air-donut-inner" id="air-donut-num">0%</div></div>
+            <div id="air-streak" class="air-streak"></div>
+          </div>
+        </div>
+        <div class="air-grid">
+          <div class="panel">
+            <h3 id="air-chart-title" data-i18n="air_chart_m">近 4 周完成</h3>
+            <div id="air-chart"></div>
+          </div>
+          <div class="panel">
+            <h3 id="air-up-title" data-i18n="air_up_w">未来 7 天</h3>
+            <div id="air-upcoming"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3 data-i18n="air_insights">洞察与建议</h3>
+          <div id="air-insights"></div>
+        </div>
+      </div>
+      <div id="air-chat" class="ai-chat air-chat"></div>
+      <form id="air-form" class="ai-input-row">
+        <input type="text" id="air-input" maxlength="2000" autocomplete="off" disabled data-i18n-ph="ph_air" placeholder="先点「开始分析」，然后可以继续追问">
+        <button type="submit" class="btn primary" data-i18n="ai_send">发送</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- 新建/编辑弹窗 -->
+  <div id="modal-mask" class="modal-mask hidden">
+    <div class="modal">
+      <h2 id="modal-title">新建日程</h2>
+      <form id="event-form">
+        <label><span data-i18n="f_title">标题</span> <input type="text" id="f-title" maxlength="100" required data-i18n-ph="ph_title" placeholder="要做什么？"></label>
+        <div class="form-row">
+          <label><span data-i18n="f_date">日期</span> <input type="date" id="f-date" required></label>
+          <label><span data-i18n="f_time">时间</span> <input type="time" id="f-time" required></label>
+        </div>
+        <div class="form-row">
+          <label><span data-i18n="f_priority">优先级</span>
+            <select id="f-priority">
+              <option value="高" data-i18n="pri_high">🔴 高</option>
+              <option value="中" selected data-i18n="pri_med">🟡 中</option>
+              <option value="低" data-i18n="pri_low">🟢 低</option>
+            </select>
+          </label>
+          <label><span data-i18n="f_remind">提前提醒</span>
+            <select id="f-remind">
+              <option value="0" data-i18n="r_none">不提醒</option>
+              <option value="5" data-i18n="r_5">提前 5 分钟</option>
+              <option value="15" selected data-i18n="r_15">提前 15 分钟</option>
+              <option value="30" data-i18n="r_30">提前 30 分钟</option>
+              <option value="60" data-i18n="r_60">提前 1 小时</option>
+              <option value="1440" data-i18n="r_1440">提前 1 天</option>
+            </select>
+          </label>
+        </div>
+        <label><span data-i18n="f_notes">备注</span> <textarea id="f-notes" rows="2" maxlength="500" data-i18n-ph="ph_notes" placeholder="补充说明（可选）"></textarea></label>
+        <div id="form-error" class="form-error hidden"></div>
+        <div class="form-actions">
+          <button type="button" id="btn-cancel" class="btn ghost" data-i18n="btn_cancel">取消</button>
+          <button type="submit" class="btn primary" data-i18n="btn_save">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div id="settings-mask" class="modal-mask hidden">
+    <div class="modal settings-modal">
+      <h2 data-i18n="settings_title">设置</h2>
+
+      <h4 class="set-h" data-i18n="set_lang">语言 / Language</h4>
+      <div class="lang-btns">
+        <button class="lang-btn active" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="en">English</button>
+      </div>
+
+      <h4 class="set-h" data-i18n="set_alpha">界面透明度（使用背景图时）</h4>
+      <div class="alpha-row">
+        <input type="range" id="alpha-slider" min="30" max="100" step="5" value="90">
+        <span id="alpha-val">90%</span>
+      </div>
+
+      <h4 class="set-h" data-i18n="set_bg">背景图片</h4>
+      <div id="bg-drop" class="drop-zone">
+        <div class="dz-icon">🖼️</div>
+        <div data-i18n="bg_drop">把图片拖到这里，或点击选择</div>
+        <div class="dz-sub" data-i18n="bg_drop_sub">只更换界面背景</div>
+      </div>
+      <input type="file" id="bg-file" accept="image/*" class="hidden">
+      <div id="bg-preview" class="drop-preview hidden">
+        <img id="bg-preview-img" alt="">
+        <button id="btn-reset-bg" class="btn small ghost" data-i18n="bg_reset">恢复默认背景</button>
+      </div>
+      <div id="bg-msg" class="drop-msg hidden" data-i18n="bg_hint">✓ 背景已更新</div>
+
+      <h4 class="set-h" id="icon-section" data-i18n="set_icon">软件图标</h4>
+      <div id="icon-drop" class="drop-zone">
+        <div class="dz-icon">🎨</div>
+        <div data-i18n="icon_drop">把图片拖到这里，或点击选择</div>
+        <div class="dz-sub" data-i18n="icon_drop_sub">自动裁成方形，同步更换托盘和桌面快捷方式图标</div>
+      </div>
+      <input type="file" id="icon-file" accept="image/*" class="hidden">
+      <div id="icon-preview" class="drop-preview hidden">
+        <img id="icon-preview-img" alt="" class="icon-preview-img">
+        <button id="btn-reset-icon" class="btn small ghost" data-i18n="icon_reset">恢复默认图标</button>
+      </div>
+      <div id="icon-msg" class="drop-msg hidden" data-i18n="icon_hint">✓ 图标已更新（托盘 + 桌面快捷方式）</div>
+
+      <h4 class="set-h" data-i18n="set_ai">AI 功能（智谱 GLM）</h4>
+      <label class="ai-set-row"><span data-i18n="set_ai_key">API Key</span>
+        <input type="password" id="ai-key" autocomplete="off" placeholder="粘贴你的智谱 API Key">
+      </label>
+      <label class="ai-set-row"><span data-i18n="set_ai_model">模型</span>
+        <select id="ai-model"></select>
+      </label>
+      <div class="ai-set-actions">
+        <button type="button" id="btn-ai-save" class="btn small primary" data-i18n="set_ai_save">保存 AI 设置</button>
+        <span id="ai-key-state" class="ai-key-state"></span>
+      </div>
+
+      <h4 class="set-h" data-i18n="set_sync">数据同步</h4>
+      <div class="sync-row">
+        <button type="button" id="btn-sync-export" class="btn small primary" data-i18n="sync_export">导出同步包</button>
+        <button type="button" id="btn-sync-import" class="btn small ghost" data-i18n="sync_import">导入同步包</button>
+        <input type="file" id="sync-file" accept=".json,application/json" class="hidden">
+      </div>
+      <div id="sync-state" class="sync-state"></div>
+      <div id="sync-msg" class="drop-msg hidden"></div>
+
+      <div class="form-actions">
+        <button type="button" id="btn-settings-close" class="btn ghost" data-i18n="settings_close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-box"></div>
+  <script>
+    // PWA Service Worker：只在 https（GitHub Pages 部署的手机版）下注册；
+    // 电脑版走 http://127.0.0.1，不需要也不应缓存
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
+  <script src="static/local/storage.js"></script>
+  <script src="static/local/ai.js"></script>
+  <script src="static/api.js"></script>
+  <script src="static/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+data/
+icon_preview.png
+icon_source.png
+.idea/
+
+# 自带的便携运行环境（Python 3.12 + 全部依赖，约 50MB 二进制）。
+# 打 zip 包直接分享时应包含它；git 托管源码时不入库，
+# 克隆者双击 install_requirements.bat 安装依赖即可。
+runtime/
+
+# 本地遗留的临时文件（runtime 打包残留，可整个删掉）
+%TEMP%/
