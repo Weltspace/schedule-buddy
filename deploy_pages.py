@@ -68,7 +68,10 @@ def main():
         run(["git", "init", "-b", "gh-pages"], cwd=work)
         run(["git", "remote", "add", "origin", remote], cwd=work)
         run(["git", "add", "-A"], cwd=work)
-        run(["git", "commit", "-m", "deploy: schedule-buddy web app"], cwd=work)
+        # 临时仓库没有 git 身份配置（新机器常没配全局 user.name/email），用 -c 现场指定
+        run(["git", "-c", "user.name=Schedule Buddy Deploy",
+             "-c", "user.email=deploy@users.noreply.github.com",
+             "commit", "-m", "deploy: schedule-buddy web app"], cwd=work)
         run(["git", "push", "-f", "origin", "gh-pages"], cwd=work)
         print("\n已推送到 gh-pages 分支。到 GitHub 仓库 Settings → Pages 选择 gh-pages 分支，")
         print("开启后手机访问 https://<用户名>.github.io/<仓库名>/ 即可使用。")
