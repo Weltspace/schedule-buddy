@@ -5,6 +5,7 @@
 - 点窗口右上角 × 只是隐藏到托盘，提醒照常工作；托盘菜单可恢复窗口或真正退出；
 - pywebview 未安装时自动回退为浏览器模式（页面全部关闭超时后自动退出）。
 """
+import json
 import logging
 import os
 import socket
@@ -305,7 +306,24 @@ def api_delete_milestone(lt_id, ms_id):
 # ---------- 数据同步（同步包：与手机 PWA 互导，单向覆盖） ----------
 @app.route("/api/sync/export", methods=["GET"])
 def api_sync_export():
-    return jsonify(storage.export_sync_package())
+    pkg = storage.export_sync_package()
+    # 桌面窗口（WebView2）会吞掉 <a download> 的 blob 下载，所以电脑版由后端
+    # 直接把文件写进用户的"下载"文件夹；写失败则返回空 saved_path，
+    # 前端回退为浏览器下载（局域网浏览器模式不受影响）。
+    saved_path = ""
+    try:
+        downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+        os.makedirs(downloads, exist_ok=True)
+        fname = "schedule-buddy-sync-{}.json".format(
+            pkg["exported_at"].replace("-", "").replace(":", "").replace(" ", ""))
+        full = os.path.join(downloads, fname)
+        with open(full, "w", encoding="utf-8") as f:
+            json.dump(pkg, f, ensure_ascii=False, indent=2)
+        saved_path = full
+    except OSError:
+        log.exception("同步包写入下载文件夹失败，回退浏览器下载")
+    pkg["saved_path"] = saved_path
+    return jsonify(pkg)
 
 
 @app.route("/api/sync/import", methods=["POST"])

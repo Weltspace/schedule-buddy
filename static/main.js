@@ -88,6 +88,8 @@ const I18N = {
     sync_confirm_dirty: "注意：本地有未同步的修改，导入会覆盖它们！\n（导出于 {time}，版本 {v}，含 {n} 条日程、{m} 个长期任务）\n确定覆盖？",
     sync_done: "✓ 导入成功（{n} 条日程、{m} 个长期任务）",
     sync_exported: "✓ 已导出，把文件发到另一台设备导入即可同步",
+    sync_saved: "✓ 已保存到下载文件夹：{p}",
+    sync_exported_toast: "✓ 同步包已导出（下载文件夹）",
     sync_fail: "同步操作失败",
   },
   en: {
@@ -164,6 +166,8 @@ const I18N = {
     sync_confirm_dirty: "Warning: this device has unsynced changes that will be overwritten!\n(exported {time}, version {v}: {n} events, {m} goals)\nOverwrite anyway?",
     sync_done: "✓ Imported ({n} events, {m} goals)",
     sync_exported: "✓ Exported — send this file to your other device to sync",
+    sync_saved: "✓ Saved to your Downloads folder: {p}",
+    sync_exported_toast: "✓ Sync file exported (Downloads folder)",
     sync_fail: "Sync failed",
   },
 };
@@ -1462,9 +1466,16 @@ function downloadSyncPackage(pkg) {
 $("#btn-sync-export").onclick = async () => {
   try {
     const pkg = await API.syncExport();
-    downloadSyncPackage(pkg);
-    flashMsg($("#sync-msg"));
-    $("#sync-msg").textContent = t("sync_exported");
+    if (pkg.saved_path) {
+      // 电脑桌面版：后端已把文件直接写进"下载"文件夹，不再走浏览器下载
+      flashMsg($("#sync-msg"));
+      $("#sync-msg").textContent = tf("sync_saved", { p: pkg.saved_path });
+      showToast(t("sync_exported_toast"), pkg.saved_path);
+    } else {
+      downloadSyncPackage(pkg);
+      flashMsg($("#sync-msg"));
+      $("#sync-msg").textContent = t("sync_exported");
+    }
     refreshSyncState();
   } catch (e) {
     alert(t("sync_fail") + (e && e.message ? `：${e.message}` : ""));
