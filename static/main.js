@@ -1125,6 +1125,10 @@ function shiftDay(n) {
   renderDay();
 }
 $("#day-picker").onchange = renderDay;
+// 手机版原生日期输入缩成 1px 透明，点日期文字唤起系统选择器（桌面端点输入框自身也顺带生效）
+$(".day-title").addEventListener("click", () => {
+  try { $("#day-picker").showPicker(); } catch (_) { /* 老内核无 showPicker，忽略 */ }
+});
 $("#priority-filter").onchange = (e) => { filterPriority = e.target.value; render(); };
 $("#hide-done").onchange = (e) => { hideDone = e.target.checked; render(); };
 

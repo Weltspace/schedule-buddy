@@ -74,10 +74,10 @@ body {
 main { padding: 20px 24px 60px; max-width: 1100px; margin: 0 auto; }
 .hidden { display: none !important; }
 
-/* 筛选栏：只服务日视图（优先级/隐藏已完成），长期任务视图隐藏 */
+/* 筛选：在顶栏内（顶栏 flex-wrap 兜底超窄换行），只服务日视图 */
 .filters {
-  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-  flex-wrap: wrap; padding: 14px 24px 0;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
 }
 body.no-filters .filters { display: none; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -571,12 +571,36 @@ body.local-mode #icon-msg { display: none !important; }
 
 @media (max-width: 700px) {
   .week-grid { grid-template-columns: 1fr; }
-  .topbar { padding: 10px 14px; }
-  .filters, main { padding-left: 14px; padding-right: 14px; }
+  .topbar { padding: 10px 14px; gap: 10px; }
+  main { padding-left: 14px; padding-right: 14px; }
   .lt-grid { grid-template-columns: 1fr; }
   /* AI 聊天高度用 dvh，避免手机地址栏遮挡；给底部标签栏留出空间 */
   .ai-chat { max-height: calc(100dvh - 330px); }
   .air-chat { max-height: calc(100dvh - 430px); }
+
+  /* 顶栏一行放下：筛选（左）＋ ⚙ ＋ 精简新建按钮（右） */
+  .filters { gap: 8px; }
+  .filter-right { gap: 10px; }
+  .filters select { font-size: 12.5px; padding: 6px 4px; }
+  .toggle { font-size: 12px; }
+  #btn-new { font-size: 0; padding: 9px 11px; }
+  #btn-new::before { content: "＋"; font-size: 15px; font-weight: 600; }
+
+  /* 日期导航单行：两端细箭头，中间日期文字（点文字直接唤起系统日期选择器） */
+  .day-nav { flex-wrap: nowrap; gap: 6px; }
+  #day-prev, #day-next { font-size: 0; padding: 8px 13px; flex-shrink: 0; }
+  #day-prev::before { content: "‹"; font-size: 18px; line-height: 1; }
+  #day-next::before { content: "›"; font-size: 18px; line-height: 1; }
+  .day-title {
+    flex: 1; justify-content: center; gap: 0; min-width: 0;
+    position: relative; cursor: pointer;
+  }
+  /* 输入框缩成 1px 透明但保持"已渲染"（showPicker 要求元素在渲染树里） */
+  .day-title input[type="date"] {
+    position: absolute; left: 50%; width: 1px; height: 1px;
+    opacity: 0; border: 0; padding: 0;
+  }
+  #day-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* 底部标签栏：窄屏时把四个视图标签固定到屏幕底部（桌面端不受影响）。
      注意：topbar 的 backdrop-filter 会让 fixed 子元素以 topbar 为定位基准，
