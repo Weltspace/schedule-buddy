@@ -453,6 +453,14 @@ body.has-bg .lt-actions { background: linear-gradient(to right, rgba(255,255,255
   padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; outline: none;
 }
 .ai-input-row input:focus { border-color: var(--primary); }
+
+/* AI 两个视图填满视口剩余高度：聊天区伸展、输入行钉在底部（不悬在半空） */
+#view-ai, #view-air { display: flex; flex-direction: column; }
+#view-ai { height: calc(100vh - 160px); }
+#view-air { min-height: calc(100vh - 160px); }
+#view-ai .ai-chat { flex: 1 1 auto; min-height: 0; max-height: none; }
+#view-ai .ai-input-row { margin-top: 10px; }
+#view-air .ai-input-row { margin-top: auto; padding-top: 10px; }
 .air-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
 .air-error { font-size: 12.5px; color: var(--red); }
 .air-scopes { display: flex; gap: 6px; }
@@ -591,9 +599,12 @@ body.apk-mode #sync-apk-hint { display: block; }
   .topbar { padding: 10px 14px; gap: 10px; }
   main { padding-left: 14px; padding-right: 14px; }
   .lt-grid { grid-template-columns: 1fr; }
-  /* AI 聊天高度用 dvh，避免手机地址栏遮挡；给底部标签栏留出空间 */
+  /* AI 聊天高度用 dvh，避免手机地址栏遮挡；给底部标签栏留出空间。
+     view-ai 已是弹性列（见上方 #view-ai 规则），聊天区 flex 伸展无需 max-height */
   .ai-chat { max-height: calc(100dvh - 330px); }
   .air-chat { max-height: calc(100dvh - 430px); }
+  #view-ai { height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
+  #view-air { min-height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
 
   /* 顶栏一行放下：筛选（左）＋ ⚙ ＋ 精简新建按钮（右） */
   .filters { gap: 8px; }
