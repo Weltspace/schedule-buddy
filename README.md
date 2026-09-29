@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-A standalone, zero-config, **Windows desktop scheduler** that never uploads your data. Opens as a real desktop window (no browser), with everything — events, long-term goals, statistics — stored locally on your own machine.
+A standalone, zero-config, **local-first scheduler**. Three forms, one experience: a **Windows desktop app** (standalone window, no browser), an **Android app** (a real installable APK), and a **mobile web app** (opens in any browser). Events, long-term goals and statistics are always stored on your own device — nothing is ever uploaded.
 
 | Day view | Week view | Stats | Long-term goals |
 | --- | --- | --- | --- |
@@ -13,7 +13,8 @@ A standalone, zero-config, **Windows desktop scheduler** that never uploads your
 - **AI assistant**: plan in one sentence ("meeting at 3pm tomorrow", "30 minutes of vocabulary every morning for two weeks") — the AI parses times and creates/edits events and goals directly, with multi-turn follow-ups
 - **AI insights**: nothing runs until you click "Analyze" (zero cost otherwise); get a completion chart, insights and suggestions, then keep asking follow-up questions
 - **Desktop window**: runs as a standalone window (pywebview); clicking × minimizes to the system tray while reminders keep working; quit from the tray menu
-- **Event management**: create / edit / delete / mark done, with priorities (🔴 high 🟡 med 🟢 low) and categories (Work / Life / Study / Other)
+- **Android app**: a real installable APK (~2 MB) — own launcher icon, fullscreen, fully offline, data in the app's private storage; export the sync file straight to WeChat via the share sheet, and open WeChat-received sync files directly in the app
+- **Event management**: create / edit / delete / mark done, with a deliberately minimal interface (tag systems like priorities and categories were removed on purpose)
 - **Reminders**: from 5 minutes to 1 day ahead, delivered as Windows toast notifications; reminders missed by more than 10 minutes are skipped instead of flooding you on startup
 - **Long-term goals**: set goals with optional deadlines (shows "N days left", red when overdue) and per-step deadlines too; drag-and-drop to reorder both goals and steps; progress bars update automatically
 - **Statistics & reports**: completion rate, monthly heatmap, category breakdown, plus a **weekly report** (browse any week, compare with the previous one) and an **overall report** (6-month trend, most productive day)
@@ -82,11 +83,32 @@ Click the ⚙ gear in the top-right to open Settings:
 
 You can also drag an image onto `change_icon.py` to change only the icon.
 
-## 📱 Mobile version (PWA, sync with your PC)
+## 📱 Mobile version (Android app / web PWA, sync with your PC)
 
-The PC and mobile versions share the same web app. Publish it to GitHub Pages (`python deploy_pages.py`, requires a GitHub remote) and open the URL on your phone. In ⚙ Settings, tap **Install to Home Screen** to install it as a standalone app (browsers without the install dialog: use the browser menu "Add to Home Screen"). Data lives in the phone's browser storage; nothing runs in the background. Paste your GLM API key in ⚙ Settings to use AI features on the phone.
+Three ways to run it on a phone; schedule data always lives on the device (AI calls GLM directly from the device).
 
-**Keeping data in sync (manual sync file):** in ⚙ Settings → "Data Sync", **export** a sync file on one device, send it to the other (e.g. WeChat), and **import** it there (full overwrite, with a warning if the target has unsynced changes). Events and goals are synced; background/theme stay per-device.
+### Option 1: Android app (recommended, most complete)
+
+A real standalone APK — launcher icon, fullscreen, no browser UI, fully offline, and **data lives in the app's private storage** (not in a browser, so system cleanup can't touch it):
+
+1. Grab the latest `ScheduleBuddy-vX.X.apk` from [Releases](https://github.com/Weltspace/schedule-buddy/releases), send it to your phone via WeChat/QQ, and tap to install (the "unknown apps" prompt is Android's normal warning for non-store installs — allow it)
+2. Open the app and paste your Zhipu GLM API key in ⚙ Settings — that's the whole setup
+3. Sync is native: tap "Export sync file" to get the **system share sheet** (pick WeChat → File Transfer); for a file received in WeChat, tap it → "…" → **Open with → Schedule Buddy** for a one-tap import, no need to leave WeChat
+
+Build it yourself: run `./runtime/python.exe make_apk.py` on a PC (one-time JDK / Android SDK / Gradle setup — see the header of `make_apk.py`). After code changes just rebuild and install over the old APK — data survives the upgrade.
+
+### Option 2: Web app (PWA, opens in any browser)
+
+1. Publish to GitHub Pages from your PC: `python deploy_pages.py` (needs a git remote; alternatively upload `index.html`, `manifest.json`, `sw.js` and the `static/` folder manually on github.com)
+2. Enable Pages in repo Settings (source: gh-pages branch), then open `https://<user>.github.io/<repo>/` on the phone
+3. Paste your GLM API key in ⚙ Settings
+4. To make it feel like an app: ⚙ Settings → **Install to Home Screen** (Chrome/Edge install it as a standalone app; if your browser shows no install dialog, use its menu "Add to Home screen" — most Chinese browsers only create a bookmark shortcut, so use Option 1 for a real app)
+
+### Option 3: Access the PC over LAN
+
+See "📶 Access the PC version from your phone" below.
+
+**Keeping data in sync (manual sync file):** in ⚙ Settings → "Data Sync", **export** a sync file on one device, send it to the other (e.g. WeChat), and **import** it there (full overwrite, with a warning if the target has unsynced changes). On the Android app the export pops the share sheet and WeChat-received files can be opened directly by the app. Events and goals are synced; background/theme stay per-device.
 
 ## 📶 Access the PC version from your phone (optional, off by default)
 
@@ -139,6 +161,15 @@ The folder is fully portable — data travels with it. Run `create_desktop_short
 **Antivirus complains?**
 This is a plain Python script with no network uploads — safe to whitelist (some AV products are just sensitive to script-based launchers).
 
+**The Android app warns "unknown apps / blocked install"?**
+Android's normal prompt for installs outside app stores. Tap "Install anyway / allow" in the dialog, or grant the "install unknown apps" permission to WeChat / your file manager in system settings.
+
+**Tapping "Export / Background image / Import" in the Android app does nothing?**
+Update to APK v1.1 or newer (older builds lacked the native file chooser and share bridge). After exporting, a system share sheet appears — pick a target (e.g. WeChat) there to finish.
+
+**How do I update the Android app?**
+Install the new APK over the old one — data is kept (same signing key). The web version is always current on load; no action needed.
+
 ## ⚙️ Environment variables (optional)
 
 | Variable | Default | Description |
@@ -157,25 +188,37 @@ This is a plain Python script with no network uploads — safe to whitelist (som
 ├── media.py                      # Background saving, icon generation, taskbar icon (AUMID), shortcuts
 ├── notifier.py                   # Windows toast notifications
 ├── make_icon.py                  # Default icon generator (recolor & re-run to make it yours)
+├── make_pwa_icons.py             # PWA PNG icons generated from icon.ico
 ├── change_icon.py                # Manual icon change: drop an image on it
 ├── create_desktop_shortcut.py    # Creates the desktop shortcut
+├── deploy_pages.py               # Publishes the web app to GitHub Pages (gh-pages branch)
+├── make_apk.py                   # One-command Android APK build (assets → Gradle → sign → dist/)
+├── android/                      # Android shell project: WebView offline shell + WeChat share/import bridge
+├── dist/                         # Build output (ScheduleBuddy-vX.X.apk, not committed)
 ├── start_schedule_buddy.vbs      # Daily launch entry (no console; prefers runtime/)
 ├── start_schedule_buddy_console.bat  # Launch with console (for log/debug)
 ├── install_requirements.bat      # Dependency installer (when runtime/ is absent)
+├── index.html                    # The single HTML of the whole UI (PC & mobile share it)
+├── manifest.json + sw.js         # PWA: install-to-home-screen + offline cache (web version only)
 ├── runtime/                      # Bundled portable env: Python 3.12 + all dependencies
 ├── requirements.txt              # Dependency list (for pip install/upgrades)
-├── templates/ + static/          # UI (vanilla HTML/CSS/JS, no framework)
+├── static/api.js                 # Frontend data facade: Flask on PC / local impl on mobile
+├── static/local/storage.js       # Mobile local data layer (IndexedDB, twin of storage.py)
+├── static/local/ai.js            # Mobile local AI (browser → GLM directly, twin of ai.py)
+├── static/main.js + style.css    # Frontend logic & styles (i18n dictionaries, mobile layout)
 └── data/                         # Your data (schedule.json / settings.json)
 ```
 
 ## 📦 Sharing / open-source release
 
 - **Zip and send**: just compress the whole folder into a zip — any Windows 10/11 recipient can extract it and double-click `start_schedule_buddy.vbs`, **no Python installation required** on their machine.
+- **Attach APK to GitHub Releases**: `make_apk.py` outputs to `dist/` — upload `ScheduleBuddy-vX.X.apk` to a Release so Android users can install the app without any build tooling.
 - **Git hosting**: `runtime/` is large (~50 MB of binaries) and should not be committed (excluded in `.gitignore`). People who clone the repo follow "Quick Start" to install Python once and double-click `install_requirements.bat`; alternatively attach a zip with `runtime/` included to your GitHub Releases.
 
 ## 🔧 Technical notes
 
 - **Runtime**: pywebview desktop window (× hides to tray, stays resident); falls back to browser mode if pywebview is missing
+- **Android shell**: an offline WebView shell with the whole frontend bundled in the APK, served through WebViewAssetLoader under a proper https origin (IndexedDB is unreliable on file://). A native bridge handles the file chooser (background/import), the system share sheet (export) and WeChat "Open with → Schedule Buddy" (one-tap import). The Service Worker is disabled inside the APK (the frontend ships in the package; an SW would serve stale files after upgrades)
 - **Taskbar icon**: explicit AppUserModelID + a Start Menu shortcut carrying the same AUMID, so icon changes apply to the taskbar too
 - **Reminders**: a background thread scans due events every 30 s and fires toasts; open pages show in-app toasts via polling; a shared "reminded" marker prevents duplicates; items overdue by 10+ minutes are skipped silently
 - **Data safety**: every write is atomic (temp file + replace) with corruption recovery; all requests are CSRF-protected

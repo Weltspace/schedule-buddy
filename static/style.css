@@ -570,10 +570,13 @@ body.local-mode #icon-file,
 body.local-mode #icon-preview,
 body.local-mode #icon-msg { display: none !important; }
 
-/* "安装到桌面"只属于手机 PWA（电脑 Flask 模式不显示） */
+/* "安装到桌面"只属于手机 PWA（电脑 Flask 模式不显示；APK 里由原生加 apk-mode 类） */
 body:not(.local-mode) #pwa-section,
 body:not(.local-mode) #pwa-row,
-body:not(.local-mode) #pwa-hint { display: none !important; }
+body:not(.local-mode) #pwa-hint,
+body.apk-mode #pwa-section,
+body.apk-mode #pwa-row,
+body.apk-mode #pwa-hint { display: none !important; }
 
 @media (max-width: 700px) {
   .week-grid { grid-template-columns: 1fr; }

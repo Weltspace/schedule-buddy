@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +46,7 @@ public class MainActivity extends Activity {
     private WebViewAssetLoader assetLoader;
     private byte[] pendingShared = null;   // 从微信等收到的待导入同步包
     private boolean pageReady = false;
+    private ValueCallback<Uri[]> fileCallback;   // <input type=file> 回调
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -68,7 +72,14 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return assetLoader.shouldInterceptRequest(request.getUrl());
+                Uri u = request.getUrl();
+                if ("appassets.androidplatform.net".equals(u.getHost())
+                        && u.getPath() != null && u.getPath().endsWith("/sw.js")) {
+                    // 前端已内置且本地加载，Service Worker 只会在升级后吐旧缓存，直接 404 掉
+                    return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found",
+                            null, new ByteArrayInputStream(new byte[0]));
+                }
+                return assetLoader.shouldInterceptRequest(u);
             }
 
             @Override
@@ -85,7 +96,28 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 pageReady = true;
+                // 告诉页面"你在独立 APK 里"（比 JS 桥注入时机更可靠），隐藏安装入口等
+                view.evaluateJavascript(
+                        "document.body.classList.add('apk-mode')", null);
                 injectSharedFile();   // 若是带着微信收到的文件冷启动进来的
+            }
+        });
+
+        // <input type="file">（换背景图 / 导入同步包）必须由原生实现文件选择器，
+        // 否则点了毫无反应
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                                             FileChooserParams params) {
+                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                fileCallback = callback;
+                try {
+                    startActivityForResult(params.createIntent(), FILE_PICK_REQUEST);
+                    return true;
+                } catch (Exception e) {
+                    fileCallback = null;
+                    return false;
+                }
             }
         });
 
@@ -93,6 +125,22 @@ public class MainActivity extends Activity {
         web.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
 
         handleSendIntent(getIntent());
+    }
+
+    private static final int FILE_PICK_REQUEST = 100;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_PICK_REQUEST && fileCallback != null) {
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                results = new Uri[]{ data.getData() };
+            }
+            fileCallback.onReceiveValue(results);
+            fileCallback = null;
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

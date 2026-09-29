@@ -813,8 +813,9 @@ let pwaPromptEvent = null;
 function refreshPwaUI() {
   const installed = window.matchMedia("(display-mode: standalone)").matches;
   const section = $("#pwa-section");
-  if (!API.isLocal() || installed || window.AndroidBridge) {
-    // APK 里已经是独立应用，无需安装入口
+  if (!API.isLocal() || installed || window.AndroidBridge
+      || document.body.classList.contains("apk-mode")) {
+    // 独立 APK 里无需安装入口（apk-mode 由原生 onPageFinished 加，比桥注入时机可靠）
     section.classList.add("hidden"); return;
   }
   section.classList.remove("hidden");
