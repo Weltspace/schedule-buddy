@@ -12,3 +12,11 @@ runtime/
 
 # 本地遗留的临时文件（runtime 打包残留，可整个删掉）
 %TEMP%/
+
+# 安卓打包：签名密钥配置、构建产物、生成文件不入库（仓库是公开的）
+android/signing.properties
+android/local.properties
+android/.gradle/
+android/app/build/
+android/app/src/main/assets/
+dist/

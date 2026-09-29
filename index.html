@@ -252,8 +252,9 @@
   <div id="toast-box"></div>
   <script>
     // PWA Service Worker：只在 https（GitHub Pages 部署的手机版）下注册；
-    // 电脑版走 http://127.0.0.1，不需要也不应缓存
-    if ("serviceWorker" in navigator && location.protocol === "https:") {
+    // 电脑版走 http://127.0.0.1，不需要也不应缓存；
+    // APK 里前端已内置且本地加载，注册 SW 反而会在升级后吐旧缓存
+    if ("serviceWorker" in navigator && location.protocol === "https:" && !window.AndroidBridge) {
       addEventListener("load", () => {
         navigator.serviceWorker.register("sw.js").catch(() => {});
       });

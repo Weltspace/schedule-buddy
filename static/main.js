@@ -89,6 +89,7 @@ const I18N = {
     sync_exported: "✓ 已导出，把文件发到另一台设备导入即可同步",
     sync_saved: "✓ 已保存到下载文件夹：{p}",
     sync_exported_toast: "✓ 同步包已导出（下载文件夹）",
+    sync_shared_toast: "✓ 已弹出分享面板", sync_shared_sub: "选微信发送即可，建议发到「文件传输助手」",
     sync_fail: "同步操作失败",
     set_pwa: "安装到桌面", pwa_install: "安装应用", pwa_installed: "已安装 ✓",
     pwa_hint: "没弹出安装框？在浏览器菜单里选「添加到桌面 / 安装应用」",
@@ -168,6 +169,7 @@ const I18N = {
     sync_exported: "✓ Exported — send this file to your other device to sync",
     sync_saved: "✓ Saved to your Downloads folder: {p}",
     sync_exported_toast: "✓ Sync file exported (Downloads folder)",
+    sync_shared_toast: "✓ Share sheet opened", sync_shared_sub: "Pick WeChat to send it — tip: send to \"File Transfer\"",
     sync_fail: "Sync failed",
     set_pwa: "Install to Home Screen", pwa_install: "Install App", pwa_installed: "Installed ✓",
     pwa_hint: "No install dialog? Use your browser menu: \"Add to Home screen\" / \"Install app\".",
@@ -811,7 +813,10 @@ let pwaPromptEvent = null;
 function refreshPwaUI() {
   const installed = window.matchMedia("(display-mode: standalone)").matches;
   const section = $("#pwa-section");
-  if (!API.isLocal() || installed) { section.classList.add("hidden"); return; }
+  if (!API.isLocal() || installed || window.AndroidBridge) {
+    // APK 里已经是独立应用，无需安装入口
+    section.classList.add("hidden"); return;
+  }
   section.classList.remove("hidden");
   // Chromium 系浏览器（Chrome/Edge/多数国产壳）支持 beforeinstallprompt：一键弹系统安装框，装成独立应用；
   // 不支持的浏览器降级为菜单操作指引
@@ -1480,11 +1485,21 @@ async function refreshSyncState() {
   } catch (_) { /* 静默 */ }
 }
 
+function syncFileName(pkg) {
+  return `schedule-buddy-sync-${pkg.exported_at.replace(/[-: ]/g, "").slice(0, 12)}.json`;
+}
+
+// APK 内：调原生分享面板（微信/QQ/保存到文件），不走浏览器下载
+function shareSyncPackage(pkg) {
+  AndroidBridge.shareSync(syncFileName(pkg), JSON.stringify(pkg, null, 2));
+  showToast(t("sync_shared_toast"), t("sync_shared_sub"));
+}
+
 function downloadSyncPackage(pkg) {
   const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `schedule-buddy-sync-${pkg.exported_at.replace(/[-: ]/g, "").slice(0, 12)}.json`;
+  a.download = syncFileName(pkg);
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }
@@ -1497,6 +1512,11 @@ $("#btn-sync-export").onclick = async () => {
       flashMsg($("#sync-msg"));
       $("#sync-msg").textContent = tf("sync_saved", { p: pkg.saved_path });
       showToast(t("sync_exported_toast"), pkg.saved_path);
+    } else if (window.AndroidBridge) {
+      // APK：直发微信等（系统分享面板）
+      shareSyncPackage(pkg);
+      flashMsg($("#sync-msg"));
+      $("#sync-msg").textContent = t("sync_shared_sub");
     } else {
       downloadSyncPackage(pkg);
       flashMsg($("#sync-msg"));
@@ -1519,6 +1539,11 @@ $("#sync-file").onchange = async (e) => {
   } catch (_) {
     return alert(t("sync_bad_file"));
   }
+  importSyncObject(pkg);
+};
+
+// 导入一个校验过的同步包对象（文件选择器和微信"用日程助手打开"共用）
+async function importSyncObject(pkg) {
   if (!pkg || pkg.kind !== SYNC_KIND || !pkg.data || !Array.isArray(pkg.data.events)) {
     return alert(t("sync_bad_file"));
   }
@@ -1538,6 +1563,16 @@ $("#sync-file").onchange = async (e) => {
     loadLongterms();
   } catch (err) {
     alert(t("sync_fail") + (err && err.message ? `：${err.message}` : ""));
+  }
+}
+
+// APK 内：微信"用其他应用打开→日程助手"把同步包 base64 传进来
+window.__sbReceiveSharedFile = (b64) => {
+  try {
+    const text = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+    importSyncObject(JSON.parse(text));
+  } catch (_) {
+    alert(t("sync_bad_file"));
   }
 };
 

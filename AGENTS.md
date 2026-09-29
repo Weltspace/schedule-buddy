@@ -27,7 +27,9 @@
 
 **移动端 UI 约定**：≤700px 断点下标签栏固定到屏幕底部（`.topbar` 的 backdrop-filter 必须在窄屏撤掉，否则 fixed 子元素以 topbar 为定位基准——踩过）；触屏拖拽 = pointer 长按 250ms（HTML5 DnD 手机不可用），插入计算与桌面共用 `moveDragging()`；`body.local-mode` 下"软件图标"设置块 CSS 隐藏；热力图格子点按弹 toast（触屏无 hover）。
 
-**PWA**：`index.html` 在项目根目录（templates/ 已删除，app.py 的 `/` 路由改 send_file；**改了它仍必须重启进程**）。`manifest.json` + `sw.js` 在根目录；SW 只在 https 下注册（index.html 里判断），部署用 `deploy_pages.py`（推 gh-pages 分支，文件清单在脚本里的 DEPLOY_FILES）。PNG 图标由 `make_pwa_icons.py` 从 icon.ico 生成。设置弹窗的「安装到桌面」区块：`beforeinstallprompt` 捕获后一键弹系统安装框（WebAPK），无该事件的浏览器降级显示菜单操作指引；已装（`display-mode: standalone`）或非 local 模式下整块隐藏（CSS `body:not(.local-mode)`）。SW 的 CACHE 常量改了前端资源要升版本号。
+**PWA**：`index.html` 在项目根目录（templates/ 已删除，app.py 的 `/` 路由改 send_file；**改了它仍必须重启进程**）。`manifest.json` + `sw.js` 在根目录；SW 只在 https 下注册（index.html 里判断，**APK 内不注册**——见下），部署用 `deploy_pages.py`（推 gh-pages 分支，文件清单在脚本里的 DEPLOY_FILES）。PNG 图标由 `make_pwa_icons.py` 从 icon.ico 生成。设置弹窗的「安装到桌面」区块：`beforeinstallprompt` 捕获后一键弹系统安装框（WebAPK），无该事件的浏览器降级显示菜单操作指引；已装（`display-mode: standalone`）、APK 内或非 local 模式下整块隐藏（CSS `body:not(.local-mode)`）。SW 的 CACHE 常量改了前端资源要升版本号。
+
+**安卓 APK（纯离线壳，2026-09-29）**：`android/` 是 WebView 壳工程（无 AndroidX 之外的原生 UI），前端整体打进 `assets/www/`，用 WebViewAssetLoader 以 `appassets.androidplatform.net` 正规 origin 加载（IndexedDB 在 file:// 不可靠）。数据全存 APP 私有空间。与网页的桥 `window.AndroidBridge`：`shareSync(name, json)` 走系统分享面板直发微信；微信"用其他应用打开"经 ACTION_SEND/VIEW 收文件，base64 注入 `window.__sbReceiveSharedFile` 复用网页端 `importSyncObject()` 防呆导入。打包：`./runtime/python.exe make_apk.py`（拷 DEPLOY_FILES → gradle → zipalign → apksigner）。打包环境在 `E:\android-build`（JDK17/SDK34/Gradle8.7，环境变量 `SB_ANDROID_HOME` 可覆盖），签名配置在 `android/signing.properties`（**不入库**，密钥在 E:\android-build\keystore）。升级前端要：bump sw.js CACHE（网页端）+ 重打 APK。Windows 打包踩坑：工程路径含中文 AGP 直接拒（拷到 E 盘 ASCII 路径构建）；Git Bash 的 TEMP=/tmp 会让 JVM 崩（规范成 Windows 临时目录）；local.properties 的 sdk.dir 必须正斜杠（properties 转义）；改完先 `gradle --stop` 再清理（守护进程锁 build 目录）。
 
 ## 2. 怎么运行（本机开发/验证流程）
 
