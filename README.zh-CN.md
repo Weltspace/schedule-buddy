@@ -90,7 +90,7 @@
 
 1. 在电脑上运行 `python deploy_pages.py`（需先 git init 并添加 GitHub 远程仓库），把网页发布到 GitHub Pages；也可以在 GitHub 网页端手动上传 `index.html`、`manifest.json`、`sw.js` 和 `static/` 文件夹
 2. 仓库 Settings → Pages 选择 gh-pages 分支开启，手机浏览器访问 `https://<用户名>.github.io/<仓库名>/`
-3. 浏览器菜单里点「添加到主屏幕」，之后就像正常 App 一样用
+3. 打开 ⚙ 设置里的「安装到桌面」点一下即可（支持的浏览器会装成独立应用，桌面出图标、全屏打开）；如果你的浏览器没弹安装框，就在浏览器菜单里点「添加到主屏幕 / 添加到桌面」
 4. 到 ⚙ 设置里填入你的智谱 API Key 即可在手机上使用 AI 助手 / AI 分析
 
 **数据互通（手动同步包，适合电脑不常开的情况）：**

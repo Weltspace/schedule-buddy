@@ -91,6 +91,8 @@ const I18N = {
     sync_saved: "✓ 已保存到下载文件夹：{p}",
     sync_exported_toast: "✓ 同步包已导出（下载文件夹）",
     sync_fail: "同步操作失败",
+    set_pwa: "安装到桌面", pwa_install: "安装应用", pwa_installed: "已安装 ✓",
+    pwa_hint: "没弹出安装框？在浏览器菜单里选「添加到桌面 / 安装应用」",
   },
   en: {
     app_title: "Schedule Buddy",
@@ -169,6 +171,8 @@ const I18N = {
     sync_saved: "✓ Saved to your Downloads folder: {p}",
     sync_exported_toast: "✓ Sync file exported (Downloads folder)",
     sync_fail: "Sync failed",
+    set_pwa: "Install to Home Screen", pwa_install: "Install App", pwa_installed: "Installed ✓",
+    pwa_hint: "No install dialog? Use your browser menu: \"Add to Home screen\" / \"Install app\".",
   },
 };
 const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -802,12 +806,45 @@ function openSettings() {
   $("#settings-mask").classList.remove("hidden");
   refreshAiSettings();
   refreshSyncState();
+  refreshPwaUI();
 }
 function closeSettings() { $("#settings-mask").classList.add("hidden"); }
 $("#btn-settings").onclick = openSettings;
 $("#btn-settings-close").onclick = closeSettings;
 $("#settings-mask").onclick = (e) => { if (e.target === e.currentTarget) closeSettings(); };
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSettings(); });
+
+/* ---------- 安装到桌面（PWA；仅手机本地模式显示） ---------- */
+let pwaPromptEvent = null;
+function refreshPwaUI() {
+  const installed = window.matchMedia("(display-mode: standalone)").matches;
+  const section = $("#pwa-section");
+  if (!API.isLocal() || installed) { section.classList.add("hidden"); return; }
+  section.classList.remove("hidden");
+  // Chromium 系浏览器（Chrome/Edge/多数国产壳）支持 beforeinstallprompt：一键弹系统安装框，装成独立应用；
+  // 不支持的浏览器降级为菜单操作指引
+  $("#btn-pwa-install").classList.toggle("hidden", !pwaPromptEvent);
+  $("#pwa-hint").classList.toggle("hidden", !!pwaPromptEvent);
+  $("#pwa-state").textContent = "";
+}
+addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  pwaPromptEvent = e;
+  refreshPwaUI();
+});
+addEventListener("appinstalled", () => {
+  pwaPromptEvent = null;
+  $("#btn-pwa-install").classList.add("hidden");
+  $("#pwa-hint").classList.add("hidden");
+  $("#pwa-state").textContent = t("pwa_installed");
+});
+$("#btn-pwa-install").onclick = async () => {
+  if (!pwaPromptEvent) return;
+  pwaPromptEvent.prompt();
+  try { await pwaPromptEvent.userChoice; } catch (_) { /* 用户关掉安装框 */ }
+  pwaPromptEvent = null;  // 规范规定一次事件只能 prompt 一次，取消后需刷新页面才会再触发
+  refreshPwaUI();
+};
 
 /* ---------- 背景图片（只换界面背景） ---------- */
 async function applyBackground() {
@@ -1539,6 +1576,7 @@ if ("Notification" in window && Notification.permission === "default") {
     refreshSyncState();
   }
   applyLang();
+  refreshPwaUI();
   applyBackground();
   applyIconPreview();
   refreshSyncState();

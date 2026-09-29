@@ -27,7 +27,7 @@
 
 **移动端 UI 约定**：≤700px 断点下标签栏固定到屏幕底部（`.topbar` 的 backdrop-filter 必须在窄屏撤掉，否则 fixed 子元素以 topbar 为定位基准——踩过）；触屏拖拽 = pointer 长按 250ms（HTML5 DnD 手机不可用），插入计算与桌面共用 `moveDragging()`；`body.local-mode` 下"软件图标"设置块 CSS 隐藏；热力图格子点按弹 toast（触屏无 hover）。
 
-**PWA**：`index.html` 在项目根目录（templates/ 已删除，app.py 的 `/` 路由改 send_file；**改了它仍必须重启进程**）。`manifest.json` + `sw.js` 在根目录；SW 只在 https 下注册（index.html 里判断），部署用 `deploy_pages.py`（推 gh-pages 分支，文件清单在脚本里的 DEPLOY_FILES）。PNG 图标由 `make_pwa_icons.py` 从 icon.ico 生成。
+**PWA**：`index.html` 在项目根目录（templates/ 已删除，app.py 的 `/` 路由改 send_file；**改了它仍必须重启进程**）。`manifest.json` + `sw.js` 在根目录；SW 只在 https 下注册（index.html 里判断），部署用 `deploy_pages.py`（推 gh-pages 分支，文件清单在脚本里的 DEPLOY_FILES）。PNG 图标由 `make_pwa_icons.py` 从 icon.ico 生成。设置弹窗的「安装到桌面」区块：`beforeinstallprompt` 捕获后一键弹系统安装框（WebAPK），无该事件的浏览器降级显示菜单操作指引；已装（`display-mode: standalone`）或非 local 模式下整块隐藏（CSS `body:not(.local-mode)`）。SW 的 CACHE 常量改了前端资源要升版本号。
 
 ## 2. 怎么运行（本机开发/验证流程）
 

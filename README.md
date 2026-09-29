@@ -84,7 +84,7 @@ You can also drag an image onto `change_icon.py` to change only the icon.
 
 ## 📱 Mobile version (PWA, sync with your PC)
 
-The PC and mobile versions share the same web app. Publish it to GitHub Pages (`python deploy_pages.py`, requires a GitHub remote) and open the URL on your phone → "Add to Home Screen". Data lives in the phone's browser storage; nothing runs in the background. Paste your GLM API key in ⚙ Settings to use AI features on the phone.
+The PC and mobile versions share the same web app. Publish it to GitHub Pages (`python deploy_pages.py`, requires a GitHub remote) and open the URL on your phone. In ⚙ Settings, tap **Install to Home Screen** to install it as a standalone app (browsers without the install dialog: use the browser menu "Add to Home Screen"). Data lives in the phone's browser storage; nothing runs in the background. Paste your GLM API key in ⚙ Settings to use AI features on the phone.
 
 **Keeping data in sync (manual sync file):** in ⚙ Settings → "Data Sync", **export** a sync file on one device, send it to the other (e.g. WeChat), and **import** it there (full overwrite, with a warning if the target has unsynced changes). Events and goals are synced; background/theme stay per-device.
 
