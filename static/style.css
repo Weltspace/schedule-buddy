@@ -166,7 +166,15 @@ select:focus, input:focus { border-color: var(--primary); }
 .ev-act.act-done:hover { color: var(--green); background: rgba(16, 185, 129, .12); }
 .ev-act.act-del:hover { color: var(--red); background: rgba(239, 68, 68, .10); }
 @media (hover: none) {
-  .ev-actions { opacity: 1; pointer-events: auto; }
+  /* 触屏（手机 APP/网页）：操作按钮不再悬浮在标题行上（会遮字），
+     改为独占一行放在卡片内容下方、右对齐 */
+  .event-card { flex-wrap: wrap; }
+  .event-card .ev-main { min-width: 0; }
+  .ev-actions {
+    position: static; transform: none; opacity: 1; pointer-events: auto;
+    flex-basis: 100%; justify-content: flex-end;
+    padding: 2px 0 0; background: none; height: auto;
+  }
 }
 .empty {
   text-align: center; color: var(--muted); padding: 60px 0; font-size: 15px;

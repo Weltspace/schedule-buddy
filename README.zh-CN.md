@@ -8,6 +8,18 @@
 | --- | --- | --- | --- |
 | ![日视图](docs/screenshot-day.png) | ![周视图](docs/screenshot-week.png) | ![统计](docs/screenshot-stats.png) | ![长期任务](docs/screenshot-goals.png) |
 
+## 📥 下载安装（三平台任选）
+
+所有安装包都在 **[GitHub Releases（点此直达最新版）](https://github.com/Weltspace/schedule-buddy/releases/latest)**：
+
+| 平台 | 下载 | 用法 |
+| --- | --- | --- |
+| 🪟 Windows | `ScheduleBuddy-vX.X-windows-portable.zip`（约 22MB） | 解压 → 双击 `start_schedule_buddy.vbs`，**免安装、免 Python、免管理员** |
+| 🤖 安卓 | `ScheduleBuddy-vX.X.apk`（约 2MB） | 微信发到手机 → 点开安装（覆盖升级数据不丢） |
+| 📱 手机网页 | 无需下载 | 浏览器打开 GitHub Pages 地址（见下文「手机版」） |
+
+> **国内网络提示**：Releases 的下载链接实测**不挂代理也能直连**（GitHub 页面和文件下载目前均可达）。如果偶尔打不开：① 换个浏览器或稍后再试；② 在电脑上下载后用微信/数据线传到手机；③ 手机应用商店里随便装一个 GitHub 加速类工具。Windows 版也可以直接把这个网页上的便携包发给朋友，解压即用。
+
 ## ✨ 功能一览
 
 - **AI 助手**：用一句话安排任务（“明天下午3点开会”“接下来两周每天背30分钟单词”），AI 自动解析时间并直接创建/修改日程和长期任务，可以多轮对话补充细节
@@ -26,6 +38,8 @@
 ## 🚀 快速上手（电脑小白照着一步步做就行）
 
 > 需要：Windows 10 / 11 电脑。全程不需要敲命令，只有一步要复制粘贴。
+>
+> **最省事的方式**：直接从上面 [Releases](https://github.com/Weltspace/schedule-buddy/releases/latest) 下载 `windows-portable.zip`，解压后跳到"第 4 步：启动"。
 >
 > **先看一眼文件夹里有没有 `runtime` 文件夹：**
 > - **有 `runtime`**（朋友直接拷给你的、或发布压缩包里带的）：什么都不用装，**直接跳到第 3 步启动**！
@@ -198,6 +212,7 @@ Windows 设置 → 系统 → 通知，确认"日程助手"（python.exe）的�
 ├── create_desktop_shortcut.py    # 创建桌面快捷方式
 ├── deploy_pages.py               # 把网页版发布到 GitHub Pages（gh-pages 分支）
 ├── make_apk.py                   # 一键打包安卓 APK（拷前端→Gradle→签名→输出 dist/）
+├── make_zip.py                   # 一键打包 Windows 便携 zip（解压即用，挂 Release 用）
 ├── android/                      # 安卓壳工程：WebView 离线壳 + 微信分享/导入原生桥
 ├── dist/                         # 打包产物（ScheduleBuddy-vX.X.apk，不入库）
 ├── start_schedule_buddy.vbs      # 日常启动入口（无黑窗口；优先用 runtime）
@@ -216,7 +231,7 @@ Windows 设置 → 系统 → 通知，确认"日程助手"（python.exe）的�
 
 ## 📦 分享给别人 / 开源发布
 
-- **直接打包发人**：把整个文件夹压缩成 zip 发出去即可——只要对方是 Windows 10/11，解压后双击 `start_schedule_buddy.vbs` 就能用，**对方连 Python 都不用装**。
+- **直接打包发人**：把整个文件夹压缩成 zip 发出去即可——只要对方是 Windows 10/11，解压后双击 `start_schedule_buddy.vbs` 就能用，**对方连 Python 都不用装**。也可以直接发 Releases 里的 `windows-portable.zip`；自己想重新打一个：`./runtime/python.exe make_zip.py`
 - **把 APK 挂到 GitHub Releases**：`make_apk.py` 的产物在 `dist/`，把 `ScheduleBuddy-vX.X.apk` 传到 Release，安卓用户不装任何打包工具就能直接装 App。
 - **用 Git 托管源码**：`runtime/` 体积大（约 50MB 的二进制），不建议提交进仓库（.gitignore 已排除）。从 Git 克隆的用户按"快速上手"装一次 Python 并双击 `install_requirements.bat` 即可；或把含 runtime 的 zip 挂在 GitHub Releases 供下载。
 

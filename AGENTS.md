@@ -31,6 +31,8 @@
 
 **安卓 APK（纯离线壳，2026-09-29）**：`android/` 是 WebView 壳工程（无 AndroidX 之外的原生 UI），前端整体打进 `assets/www/`，用 WebViewAssetLoader 以 `appassets.androidplatform.net` 正规 origin 加载（IndexedDB 在 file:// 不可靠）。数据全存 APP 私有空间。与网页的桥 `window.AndroidBridge`：`shareSync(name, json)` 走系统分享面板直发微信；微信"用其他应用打开"经 ACTION_SEND/VIEW 收文件，base64 注入 `window.__sbReceiveSharedFile` 复用网页端 `importSyncObject()` 防呆导入。打包：`./runtime/python.exe make_apk.py`（拷 DEPLOY_FILES → gradle → zipalign → apksigner）。打包环境在 `E:\android-build`（JDK17/SDK34/Gradle8.7，环境变量 `SB_ANDROID_HOME` 可覆盖），签名配置在 `android/signing.properties`（**不入库**，密钥在 E:\android-build\keystore）。升级前端要：bump sw.js CACHE（网页端）+ 重打 APK。
 
+**发布渠道（2026-09-29 起惯例）**：每个版本把 `dist/` 里的 `ScheduleBuddy-vX.X.apk` 和 `ScheduleBuddy-vX.X-windows-portable.zip`（`make_zip.py` 产物：全仓库剔除 data/dist/android 等后带 runtime 打包，解压双击 vbs 即用）都挂到 GitHub Release。Releases 下载链接国内网络直连实测可达（无代理 2.2MB/2.8s），README 已写明；API 发布用 git credential fill 取 token + Python 写 UTF-8 JSON（curl -d 直接带中文会 400）。
+
 **APK 壳三铁律（v1.1 踩坑后固化）**：① WebView 必须实现 `onShowFileChooser`（WebChromeClient）+ `onActivityResult` 回传，否则页面里所有 `<input type=file>`（换背景/导入同步包）点了毫无反应；② "在 APK 里"的判定不能用 `window.AndroidBridge`（注入时机有竞态），由原生 `onPageFinished` 给 `document.body` 加 `apk-mode` 类，CSS/JS 都以此为准；③ APK 内的 sw.js 请求在 `shouldInterceptRequest` 里直接回 404（JS 侧判桥时机不可靠，双保险），否则 SW 缓存会在 APK 升级后吐旧前端。Windows 打包踩坑：工程路径含中文 AGP 直接拒（拷到 E 盘 ASCII 路径构建）；Git Bash 的 TEMP=/tmp 会让 JVM 崩（规范成 Windows 临时目录）；local.properties 的 sdk.dir 必须正斜杠（properties 转义）；清理 scratch 前先 `gradle --stop`（守护进程锁 build 目录）。
 
 ## 2. 怎么运行（本机开发/验证流程）
@@ -168,7 +170,7 @@ python app.py
 - **i18n**：所有界面文本走 `static/main.js` 里的 `I18N.zh / I18N.en` 双词典 + HTML 的 `data-i18n` / `data-i18n-ph` 属性。**新增界面元素必须两个词典都加**，漏了会显示键名（踩过两次）
 - **分类体系已移除**（2026-09 用户决策）：用户认为手动打"工作/生活/学习"标签无意义，将来由大模型自动分类。后端 category 字段保留（新日程默认"其他"），界面上不出现任何分类选择/筛选/标签
 - **优先级已移除**（2026-09-29 用户决策）：用户认为无用且影响展示。前后端 / AI 工具 / 聚合统计里都已删掉；老数据和老同步包里的 `priority` 字段在 `validate_event` 校验时被静默丢弃，新事件不再含该字段（旧版本程序导入新同步包会默认补"中"，双向兼容）。卡片左侧竖条和圆点恢复默认灰色，不要给日程卡片重新引入按类着色
-- **操作按钮 = 悬停浮现**：日程卡片、长期任务卡片的编辑/删除按钮平时 opacity:0 不占布局宽（绝对定位 + 渐变淡入遮罩），悬停/键盘聚焦才浮现；**必须保留 `@media (hover: none)` 常显降级**——用户计划做手机版并互通，前端要保持触屏可用
+- **操作按钮 = 悬停浮现**：日程卡片、长期任务卡片的编辑/删除按钮平时 opacity:0 不占布局宽（绝对定位 + 渐变淡入遮罩），悬停/键盘聚焦才浮现；**必须保留 `@media (hover: none)` 常显降级**——触屏降级形态（2026-09-29 用户决策）：**日程卡片的三个操作按钮不再悬浮覆盖在标题行上（会遮字），改为独占一行放卡片内容下方右对齐**（`.event-card` 加 flex-wrap，`.ev-actions` 静态布局 flex-basis:100%）；长期任务卡片仍是悬浮常显，若用户反馈同样遮字再照此办理
 - **子任务行布局**：勾选框对齐第一行文字（align-items: flex-start，不要垂直居中）；文字下方固定预留一行"日期行"（min-height 保证悬停时行高不跳）；悬停操作图标（改日期/改名/删除）出现在日期行里，**不许覆盖子任务文字**
 - **添加子任务**平时收起为一个淡按钮，点击展开，Esc/失焦自动收起
 - **90 天热力图**：91 天 = 13 整列 × 7 行，**不做星期补位**（没有星期标签，对齐无意义，补位会产生首尾残缺块——踩过）；有日程但未完成 = l1，完成越多越深

@@ -8,6 +8,18 @@ A standalone, zero-config, **local-first scheduler**. Three forms, one experienc
 | --- | --- | --- | --- |
 | ![Day](docs/screenshot-day.png) | ![Week](docs/screenshot-week.png) | ![Stats](docs/screenshot-stats.png) | ![Goals](docs/screenshot-goals.png) |
 
+## 📥 Download (pick your platform)
+
+All packages live under **[GitHub Releases (go to the latest)](https://github.com/Weltspace/schedule-buddy/releases/latest)**:
+
+| Platform | Download | How to use |
+| --- | --- | --- |
+| 🪟 Windows | `ScheduleBuddy-vX.X-windows-portable.zip` (~22 MB) | Extract → double-click `start_schedule_buddy.vbs`. **No install, no Python, no admin** |
+| 🤖 Android | `ScheduleBuddy-vX.X.apk` (~2 MB) | Send it to your phone via WeChat → tap to install (upgrades keep your data) |
+| 📱 Mobile web | nothing to download | Open the GitHub Pages URL in any browser (see "Mobile version") |
+
+> Note: release downloads are currently reachable from mainland China networks without a VPN (tested). If a link won't open: try another browser or later, download on a PC and send the file to the phone via WeChat, or use any GitHub mirror/accelerator.
+
 ## ✨ Features
 
 - **AI assistant**: plan in one sentence ("meeting at 3pm tomorrow", "30 minutes of vocabulary every morning for two weeks") — the AI parses times and creates/edits events and goals directly, with multi-turn follow-ups
@@ -26,6 +38,8 @@ A standalone, zero-config, **local-first scheduler**. Three forms, one experienc
 ## 🚀 Quick Start (beginner friendly, step by step)
 
 > Requires: a Windows 10/11 PC. No command line needed except one optional step.
+>
+> **Easiest path**: download `windows-portable.zip` from [Releases](https://github.com/Weltspace/schedule-buddy/releases/latest), extract, and jump straight to "Step 4: Launch!".
 >
 > **First, check whether the folder contains a `runtime` folder:**
 > - **It does** (a zip copied from a friend, or a release package): nothing to install — **jump straight to Step 3!**
@@ -193,6 +207,7 @@ Install the new APK over the old one — data is kept (same signing key). The we
 ├── create_desktop_shortcut.py    # Creates the desktop shortcut
 ├── deploy_pages.py               # Publishes the web app to GitHub Pages (gh-pages branch)
 ├── make_apk.py                   # One-command Android APK build (assets → Gradle → sign → dist/)
+├── make_zip.py                   # One-command Windows portable zip (extract & run, for Releases)
 ├── android/                      # Android shell project: WebView offline shell + WeChat share/import bridge
 ├── dist/                         # Build output (ScheduleBuddy-vX.X.apk, not committed)
 ├── start_schedule_buddy.vbs      # Daily launch entry (no console; prefers runtime/)
@@ -211,7 +226,7 @@ Install the new APK over the old one — data is kept (same signing key). The we
 
 ## 📦 Sharing / open-source release
 
-- **Zip and send**: just compress the whole folder into a zip — any Windows 10/11 recipient can extract it and double-click `start_schedule_buddy.vbs`, **no Python installation required** on their machine.
+- **Zip and send**: just compress the whole folder into a zip — any Windows 10/11 recipient can extract it and double-click `start_schedule_buddy.vbs`, **no Python installation required** on their machine. The `windows-portable.zip` on Releases is exactly that — rebuild it yourself with `./runtime/python.exe make_zip.py`.
 - **Attach APK to GitHub Releases**: `make_apk.py` outputs to `dist/` — upload `ScheduleBuddy-vX.X.apk` to a Release so Android users can install the app without any build tooling.
 - **Git hosting**: `runtime/` is large (~50 MB of binaries) and should not be committed (excluded in `.gitignore`). People who clone the repo follow "Quick Start" to install Python once and double-click `install_requirements.bat`; alternatively attach a zip with `runtime/` included to your GitHub Releases.
 
