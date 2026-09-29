@@ -95,7 +95,11 @@ select, input[type="date"], input[type="time"] {
   border-radius: 8px; background: var(--card); color: var(--text); outline: none;
 }
 select:focus, input:focus { border-color: var(--primary); }
-.toggle { font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+.toggle {
+  font-size: 13px; color: var(--muted); cursor: pointer; user-select: none;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.toggle input { margin: 0; accent-color: var(--primary); flex-shrink: 0; }
 
 /* 日导航 */
 .day-nav {
@@ -577,6 +581,10 @@ body:not(.local-mode) #pwa-hint,
 body.apk-mode #pwa-section,
 body.apk-mode #pwa-row,
 body.apk-mode #pwa-hint { display: none !important; }
+
+/* 微信一键导入指引只在 APK 里显示 */
+#sync-apk-hint { display: none; }
+body.apk-mode #sync-apk-hint { display: block; }
 
 @media (max-width: 700px) {
   .week-grid { grid-template-columns: 1fr; }

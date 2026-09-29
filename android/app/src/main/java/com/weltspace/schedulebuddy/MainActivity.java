@@ -112,7 +112,11 @@ public class MainActivity extends Activity {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
                 try {
-                    startActivityForResult(params.createIntent(), FILE_PICK_REQUEST);
+                    Intent pick = params.createIntent();
+                    // 默认定位到系统下载目录（微信收到的文件多在 Download/WeiXin）
+                    pick.putExtra("android.provider.extra.INITIAL_URI",
+                            Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload"));
+                    startActivityForResult(pick, FILE_PICK_REQUEST);
                     return true;
                 } catch (Exception e) {
                     fileCallback = null;
