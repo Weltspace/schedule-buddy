@@ -12,7 +12,6 @@ const LocalStore = (() => {
   const STORE = "kv";
   const SYNC_KIND = "schedule-buddy-sync";
   const REMINDER_GRACE_SECONDS = 10 * 60;
-  const VALID_PRIORITIES = ["高", "中", "低"];
   const DEFAULT_DATA = { events: [], reminded: [], longterms: [] };
   const DEFAULT_SETTINGS = {
     language: "zh", background: "", icon: "", card_alpha: "0.9",
@@ -155,11 +154,7 @@ const LocalStore = (() => {
       else errors.push("时间格式应为 HH:MM");
     }
     if ("notes" in payload) cleaned.notes = String(payload.notes ?? "").trim().slice(0, 500);
-    if (!partial || "priority" in payload) {
-      const priority = String(payload.priority ?? "中").trim();
-      if (!VALID_PRIORITIES.includes(priority)) errors.push("优先级必须是 高/中/低");
-      else cleaned.priority = priority;
-    }
+    // 优先级已废弃：老数据/老同步包里的 priority 字段在这里被静默丢弃（与 storage.py 对齐）
     if ("category" in payload) {
       const category = String(payload.category ?? "其他").trim().slice(0, 20);
       cleaned.category = category || "其他";

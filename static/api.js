@@ -125,7 +125,7 @@ const API = (() => {
     pollReminders: () => Promise.resolve({
       reminders: LocalStore.popDueReminders().map(({ ev, remindAt }) => ({
         id: ev.id, title: ev.title, time: ev.time, date: ev.date,
-        priority: ev.priority || "中", remind_at: remindAt,
+        remind_at: remindAt,
       })),
     }),
 
@@ -178,9 +178,15 @@ const API = (() => {
     uploadBackground: async (file) => {
       if (!file.type.startsWith("image/")) return { ok: false, errors: ["请上传图片文件（png/jpg 等）"] };
       await LocalStore.setBackground(file);
+      // 与电脑版对齐：把 settings.background 置位，否则重启后前端以为没有背景图（踩过）
+      await LocalStore.updateSettings({ background: "1" });
       return { ok: true };
     },
-    deleteBackground: async () => { await LocalStore.deleteBackground(); return { ok: true }; },
+    deleteBackground: async () => {
+      await LocalStore.deleteBackground();
+      await LocalStore.updateSettings({ background: "" });
+      return { ok: true };
+    },
     getIconPreviewURL: () => Promise.resolve(""),
     uploadIcon: () => Promise.resolve({ ok: false, errors: ["手机版不支持更换图标"] }),
     deleteIcon: () => Promise.resolve({ ok: true, restored: false }),

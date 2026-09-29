@@ -12,13 +12,12 @@ const ICONS = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
 };
 
-/* ---------- i18n（只翻译界面文字；日程内容、分类/优先级的存储值保持中文） ---------- */
+/* ---------- i18n（只翻译界面文字；日程内容、分类的存储值保持中文） ---------- */
 const I18N = {
   zh: {
     app_title: "日程助手",
     tab_day: "今天", tab_week: "本周", tab_stats: "统计", tab_long: "长期任务", btn_new: "＋ 新建日程",
     chip_all: "全部", chip_work: "工作", chip_life: "生活", chip_study: "学习", chip_other: "其他",
-    pri_all: "全部优先级", pri_high: "🔴 高", pri_med: "🟡 中", pri_low: "🟢 低",
     hide_done: "隐藏已完成",
     day_prev: "‹ 前一天", day_next: "后一天 ›", week_prev: "‹ 上一周", week_next: "下一周 ›",
     cap_total: "全部日程", cap_done: "已完成", cap_pending: "待办中", cap_rate: "完成率",
@@ -26,7 +25,7 @@ const I18N = {
     rep_weekly: "周报", rep_overall: "总报告",
     modal_new: "新建日程", modal_edit: "编辑日程",
     f_title: "标题", ph_title: "要做什么？", f_date: "日期", f_time: "时间",
-    f_priority: "优先级", f_category: "分类", f_remind: "提前提醒",
+    f_category: "分类", f_remind: "提前提醒",
     r_none: "不提醒", r_5: "提前 5 分钟", r_15: "提前 15 分钟", r_30: "提前 30 分钟",
     r_60: "提前 1 小时", r_1440: "提前 1 天",
     f_notes: "备注", ph_notes: "补充说明（可选）", btn_cancel: "取消", btn_save: "保存",
@@ -49,7 +48,7 @@ const I18N = {
     n_items: "{n} 项",
     stats_empty: "还没有日程数据",
     confirm_del: "删除日程「{t}」？",
-    toast_starts: "{d} {t} 开始", toast_pri: "优先级{p}",
+    toast_starts: "{d} {t} 开始",
     rp_summary: "本周完成 {done}/{total} 项（完成率 {rate}%）{delta}",
     rp_delta_more: "，比上周多 {n} 项", rp_delta_less: "，比上周少 {n} 项", rp_delta_same: "，与上周持平",
     rp_days: "按天", rp_cats: "按分类", rp_trend: "近 6 个月", rp_done_cnt: "完成 {n}",
@@ -98,7 +97,6 @@ const I18N = {
     app_title: "Schedule Buddy",
     tab_day: "Today", tab_week: "This Week", tab_stats: "Stats", tab_long: "Goals", btn_new: "＋ New Event",
     chip_all: "All", chip_work: "Work", chip_life: "Life", chip_study: "Study", chip_other: "Other",
-    pri_all: "All priorities", pri_high: "🔴 High", pri_med: "🟡 Med", pri_low: "🟢 Low",
     hide_done: "Hide completed",
     day_prev: "‹ Prev Day", day_next: "Next Day ›", week_prev: "‹ Prev Week", week_next: "Next Week ›",
     cap_total: "Total", cap_done: "Completed", cap_pending: "Pending", cap_rate: "Completion",
@@ -106,7 +104,7 @@ const I18N = {
     rep_weekly: "Weekly Report", rep_overall: "Overall Report",
     modal_new: "New Event", modal_edit: "Edit Event",
     f_title: "Title", ph_title: "What needs doing?", f_date: "Date", f_time: "Time",
-    f_priority: "Priority", f_category: "Category", f_remind: "Reminder",
+    f_category: "Category", f_remind: "Reminder",
     r_none: "None", r_5: "5 min before", r_15: "15 min before", r_30: "30 min before",
     r_60: "1 hour before", r_1440: "1 day before",
     f_notes: "Notes", ph_notes: "Details (optional)", btn_cancel: "Cancel", btn_save: "Save",
@@ -129,7 +127,7 @@ const I18N = {
     n_items: "{n} items",
     stats_empty: "No schedule data yet",
     confirm_del: "Delete event \"{t}\"?",
-    toast_starts: "Starts {d} {t}", toast_pri: "priority {p}",
+    toast_starts: "Starts {d} {t}",
     rp_summary: "Completed {done}/{total} this week ({rate}%){delta}",
     rp_delta_more: ", {n} more than last week", rp_delta_less: ", {n} fewer than last week", rp_delta_same: ", same as last week",
     rp_days: "By day", rp_cats: "By category", rp_trend: "Last 6 months", rp_done_cnt: "{n} done",
@@ -182,7 +180,6 @@ const WD_FULL = {
   en: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 };
 const CAT_EN = { "工作": "Work", "生活": "Life", "学习": "Study", "其他": "Other" };
-const PRI_EN = { "高": "High", "中": "Med", "低": "Low" };
 
 let lang = "zh";
 const t = (k) => (I18N[lang] && I18N[lang][k]) || I18N.zh[k] || k;
@@ -192,7 +189,6 @@ function tf(key, map) {
   return s;
 }
 const catLabel = (c) => (lang === "en" ? (CAT_EN[c] || c) : c);
-const priLabel = (p) => (lang === "en" ? (PRI_EN[p] || p) : p);
 
 /* ---------- 工具 ---------- */
 const fmtDate = (d) => {
@@ -229,7 +225,6 @@ function remindLabel(min) {
 let events = [];
 let view = "day";
 let filterCat = "全部";
-let filterPriority = "全部";
 let hideDone = false;
 let editingId = null;   // null = 新建，否则为编辑
 let weekAnchor = null;  // 周视图锚点日期
@@ -261,9 +256,7 @@ async function deleteEvent(ev) {
 
 /* ---------- 筛选 ---------- */
 function filtered(list) {
-  return list.filter(e =>
-    (filterPriority === "全部" || e.priority === filterPriority) &&
-    (!hideDone || !e.done));
+  return list.filter(e => !hideDone || !e.done);
 }
 
 /* ---------- 渲染 ---------- */
@@ -282,7 +275,7 @@ function render() {
 
 function eventCardHTML(ev) {
   return `
-  <div class="event-card p-${escapeHtml(ev.priority)} ${ev.done ? "done" : ""}" data-id="${ev.id}">
+  <div class="event-card ${ev.done ? "done" : ""}" data-id="${ev.id}">
     <div class="ev-time">${escapeHtml(ev.time)}</div>
     <div class="ev-main">
       <div class="ev-title"><span class="ev-dot"></span>${escapeHtml(ev.title)}</div>
@@ -329,7 +322,7 @@ function renderWeek() {
         <div class="dnum ${list.length ? "has" : ""}">${d.getDate()}</div>
       </div>
       ${list.map(ev => `
-        <div class="wc-event p-${escapeHtml(ev.priority)} ${ev.done ? "done" : ""}" data-id="${ev.id}">
+        <div class="wc-event ${ev.done ? "done" : ""}" data-id="${ev.id}">
           <div class="t">${escapeHtml(ev.time)}</div>
           <div class="n">${escapeHtml(ev.title)}</div>
         </div>`).join("")}
@@ -469,7 +462,6 @@ function openModal(ev = null, presetDate = null) {
   $("#f-title").value = ev?.title || "";
   $("#f-date").value = ev?.date || presetDate || $("#day-picker").value || todayStr();
   $("#f-time").value = ev?.time || "09:00";
-  $("#f-priority").value = ev?.priority || "中";
   $("#f-remind").value = String(ev?.remind_minutes ?? 15);
   $("#f-notes").value = ev?.notes || "";
   $("#form-error").classList.add("hidden");
@@ -492,7 +484,7 @@ async function pollReminders() {
   try {
     const data = await API.pollReminders();
     for (const r of data.reminders) {
-      showToast(`⏰ ${r.title}`, `${tf("toast_starts", { d: r.date, t: r.time })} · ${tf("toast_pri", { p: priLabel(r.priority) })}`);
+      showToast(`⏰ ${r.title}`, tf("toast_starts", { d: r.date, t: r.time }));
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification(`⏰ ${r.title}`, { body: tf("toast_starts", { d: r.date, t: r.time }) });
       }
@@ -1130,7 +1122,6 @@ $("#event-form").onsubmit = async (e) => {
     title: $("#f-title").value,
     date: $("#f-date").value,
     time: $("#f-time").value,
-    priority: $("#f-priority").value,
     remind_minutes: Number($("#f-remind").value),
     notes: $("#f-notes").value,
   };
@@ -1170,7 +1161,6 @@ $("#day-picker").onchange = renderDay;
 $(".day-title").addEventListener("click", () => {
   try { $("#day-picker").showPicker(); } catch (_) { /* 老内核无 showPicker，忽略 */ }
 });
-$("#priority-filter").onchange = (e) => { filterPriority = e.target.value; render(); };
 $("#hide-done").onchange = (e) => { hideDone = e.target.checked; render(); };
 
 /* ---------- AI 助手（对话式安排任务） ---------- */
@@ -1371,11 +1361,10 @@ function renderAnalysis(d) {
     upTitle.dataset.i18n = "air_up_w";
     upTitle.textContent = t("air_up_w");
     const up = data.upcoming_7_days || [];
-    const PRI_COLOR = { "高": "var(--red)", "中": "var(--yellow)", "低": "var(--green)" };
     upBox.innerHTML = up.length
       ? up.map(e => `
         <div class="air-up">
-          <span class="air-up-dot" style="background:${PRI_COLOR[e.priority] || "var(--muted)"}"></span>
+          <span class="air-up-dot" style="background:var(--primary)"></span>
           <span class="air-up-date">${escapeHtml(e.date.slice(5))} ${escapeHtml(e.time)}</span>
           <span class="air-up-title">${escapeHtml(e.title)}</span>
         </div>`).join("")

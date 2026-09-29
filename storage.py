@@ -171,7 +171,6 @@ def import_sync_package(pkg):
     return {"events": len(cleaned["events"]), "longterms": len(cleaned["longterms"])}, []
 
 
-VALID_PRIORITIES = {"高", "中", "低"}
 VALID_CATEGORIES = {"工作", "生活", "学习", "其他"}
 
 
@@ -208,13 +207,7 @@ def validate_event(payload, partial=False):
     if "notes" in payload:
         cleaned["notes"] = str(payload.get("notes", "")).strip()[:500]
 
-    if not partial or "priority" in payload:
-        priority = str(payload.get("priority", "中")).strip()
-        if priority not in VALID_PRIORITIES:
-            errors.append("优先级必须是 高/中/低")
-        else:
-            cleaned["priority"] = priority
-
+    # 优先级已废弃：老数据/老同步包里的 priority 字段在这里被静默丢弃
     if "category" in payload:
         category = str(payload.get("category", "其他")).strip()[:20]
         cleaned["category"] = category or "其他"

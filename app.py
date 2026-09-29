@@ -151,7 +151,6 @@ def api_poll_reminders():
                 "title": ev["title"],
                 "time": ev["time"],
                 "date": ev["date"],
-                "priority": ev.get("priority", "中"),
                 "remind_at": remind_at,
             }
             for ev, remind_at in due

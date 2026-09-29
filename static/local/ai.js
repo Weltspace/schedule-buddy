@@ -83,14 +83,13 @@ const LocalAI = (() => {
       name: "add_event", description: "添加一条日程",
       parameters: { type: "object", properties: {
         title: { type: "string" }, date: { type: "string" }, time: { type: "string" },
-        priority: { type: "string", enum: ["高", "中", "低"] },
         remind_minutes: { type: "number" }, notes: { type: "string" } },
         required: ["title", "date", "time"] } } },
     { type: "function", function: {
       name: "update_event", description: "修改一条日程的内容（不改 id）",
       parameters: { type: "object", properties: {
         event_id: { type: "string" }, title: { type: "string" }, date: { type: "string" },
-        time: { type: "string" }, priority: { type: "string", enum: ["高", "中", "低"] },
+        time: { type: "string" },
         remind_minutes: { type: "number" }, notes: { type: "string" } },
         required: ["event_id"] } } },
     { type: "function", function: {
@@ -226,13 +225,12 @@ const LocalAI = (() => {
         const out = LocalStore.getEvents()
           .filter((e) => (!dfrom || e.date >= dfrom) && (!dto || e.date <= dto) && (!kw || e.title.includes(kw)))
           .map((e) => ({ id: e.id, title: e.title, date: e.date, time: e.time,
-                         priority: e.priority || "中", done: e.done || false }));
+                         done: e.done || false }));
         return { count: out.length, events: out.slice(0, 50) };
       }
       if (name === "add_event") {
         const { cleaned, errors } = LocalStore.validateEvent({
           title: args.title, date: args.date, time: args.time,
-          priority: args.priority || "中",
           remind_minutes: args.remind_minutes === undefined ? 15 : args.remind_minutes,
           notes: args.notes || "",
         });
@@ -243,7 +241,7 @@ const LocalAI = (() => {
       }
       if (name === "update_event") {
         const payload = {};
-        for (const k of ["title", "date", "time", "priority", "remind_minutes", "notes"]) {
+        for (const k of ["title", "date", "time", "remind_minutes", "notes"]) {
           if (k in args) payload[k] = args[k];
         }
         const ev = LocalStore.updateEvent(args.event_id, payload);
@@ -295,7 +293,7 @@ const LocalAI = (() => {
       `当前时间：${fmtDate(now)} ${pad2(now.getHours())}:${pad2(now.getMinutes())}（星期${wd}）。\n` +
       "规则：\n" +
       "- 解析「明天、下周三、月底」等相对时间时按当前日期计算，date 一律输出 YYYY-MM-DD。\n" +
-      "- 用户没说时间默认 09:00；没说优先级默认「中」；提醒默认提前 15 分钟，明确说不用提醒就传 0。\n" +
+      "- 用户没说时间默认 09:00；提醒默认提前 15 分钟，明确说不用提醒就传 0。\n" +
       "- 尽量在一条回复里发出多个工具调用（一次创建多个任务不要拆成多轮），未完成前不要下结论。\n" +
       "- 修改或删除前，先用查询工具找到确切 id，不要凭空猜 id。\n" +
       "- 删除长期任务这类破坏性操作，先向用户确认再执行。\n" +
@@ -311,7 +309,6 @@ const LocalAI = (() => {
       streak: data.streak,
       overdue_milestones: data.overdue_milestones,
       last_30_days: { total: data.cards.total, done: data.cards.done },
-      pending_by_priority: data.pending_by_priority,
       upcoming_7_days: data.upcoming_7_days.slice(0, 8),
       longterms: data.longterms.map((x) => ({ id: x.id, ...x })),
     };
@@ -390,7 +387,6 @@ const LocalAI = (() => {
 
     const overdueMs = lts.reduce((s, lt) => s + lt.milestones.filter(
       (m) => m.deadline && m.deadline < todayIso && !m.done).length, 0);
-    const pending = events.filter((e) => !e.done);
 
     const dayStat = (day) => {
       const iso = fmtDate(day);
@@ -407,7 +403,7 @@ const LocalAI = (() => {
         .filter((e) => !e.done && todayIso <= e.date && e.date <= bIso)
         .sort((x, y) => x.date.localeCompare(y.date) || String(x.time).localeCompare(String(y.time)))
         .slice(0, 20)
-        .map((e) => ({ title: e.title, date: e.date, time: e.time, priority: e.priority || "中" }));
+        .map((e) => ({ title: e.title, date: e.date, time: e.time }));
     };
 
     const out = { scope, generated_at: `${todayIso} ${pad2(today.getHours())}:${pad2(today.getMinutes())}`,
@@ -425,8 +421,6 @@ const LocalAI = (() => {
         cards: { total, done, pending: total - done, overdue: overdueMs },
         rate: total ? Math.round(done / total * 100) : 0,
         days, prev_week_done: prevDone,
-        pending_by_priority: Object.fromEntries(["高", "中", "低"].map(
-          (p) => [p, pending.filter((e) => e.priority === p).length])),
         upcoming_7_days: upcoming(7),
       });
     } else if (scope === "longterm") {
@@ -474,8 +468,6 @@ const LocalAI = (() => {
         cards: { total, done, pending: total - done, overdue: overdueMs },
         rate: total ? Math.round(done / total * 100) : 0,
         weeks,
-        pending_by_priority: Object.fromEntries(["高", "中", "低"].map(
-          (p) => [p, pending.filter((e) => e.priority === p).length])),
         longterms: ltBrief,
         upcoming_7_days: upcoming(7),
       });

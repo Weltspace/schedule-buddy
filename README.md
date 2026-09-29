@@ -68,7 +68,7 @@ Double-click `create_desktop_shortcut.py` — it creates a "日程助手" shortc
 
 ## 🖥️ Using the app
 
-- **今天 / This Week**: plan and review events by day or week; the category and priority filters apply to both
+- **今天 / This Week**: plan and review events by day or week; hide completed items from the top bar
 - **Stats**: completion rate, monthly heatmap, category breakdown
 - **Weekly / Overall report**: scroll down in Stats — the weekly report browses any week (per-day progress, comparison with last week); the overall report aggregates everything (6-month trend, most productive weekday)
 - **Long-term Goals**: the 4th tab. Type a goal (deadline optional) → Add; each step can have its own deadline via the inline "📅 截止日期" button; drag goal cards and steps to reorder; check steps to grow the progress bar

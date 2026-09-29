@@ -104,7 +104,6 @@ def _assistant_overview():
         "streak": data["streak"],
         "overdue_milestones": data["overdue_milestones"],
         "last_30_days": {"total": data["cards"]["total"], "done": data["cards"]["done"]},
-        "pending_by_priority": data["pending_by_priority"],
         "upcoming_7_days": data["upcoming_7_days"][:8],
         "longterms": [{"id": x["id"], **x} for x in data["longterms"]],
     }
@@ -118,7 +117,7 @@ def _system_prompt():
         f"当前时间：{now.strftime('%Y-%m-%d %H:%M')}（星期{wd}）。\n"
         "规则：\n"
         "- 解析「明天、下周三、月底」等相对时间时按当前日期计算，date 一律输出 YYYY-MM-DD。\n"
-        "- 用户没说时间默认 09:00；没说优先级默认「中」；提醒默认提前 15 分钟，明确说不用提醒就传 0。\n"
+        "- 用户没说时间默认 09:00；提醒默认提前 15 分钟，明确说不用提醒就传 0。\n"
         "- 尽量在一条回复里发出多个工具调用（一次创建多个任务不要拆成多轮），未完成前不要下结论。\n"
         "- 修改或删除前，先用查询工具找到确切 id，不要凭空猜 id。\n"
         "- 删除长期任务这类破坏性操作，先向用户确认再执行。\n"
@@ -139,14 +138,13 @@ TOOLS = [
         "name": "add_event", "description": "添加一条日程",
         "parameters": {"type": "object", "properties": {
             "title": {"type": "string"}, "date": {"type": "string"}, "time": {"type": "string"},
-            "priority": {"type": "string", "enum": ["高", "中", "低"]},
             "remind_minutes": {"type": "number"}, "notes": {"type": "string"}},
             "required": ["title", "date", "time"]}}},
     {"type": "function", "function": {
         "name": "update_event", "description": "修改一条日程的内容（不改 id）",
         "parameters": {"type": "object", "properties": {
             "event_id": {"type": "string"}, "title": {"type": "string"}, "date": {"type": "string"},
-            "time": {"type": "string"}, "priority": {"type": "string", "enum": ["高", "中", "低"]},
+            "time": {"type": "string"},
             "remind_minutes": {"type": "number"}, "notes": {"type": "string"}},
             "required": ["event_id"]}}},
     {"type": "function", "function": {
@@ -208,7 +206,7 @@ def _exec_tool(name, args, actions):
             dfrom, dto, kw = args.get("date_from"), args.get("date_to"), args.get("keyword")
             out = [
                 {"id": e["id"], "title": e["title"], "date": e["date"], "time": e["time"],
-                 "priority": e.get("priority", "中"), "done": e.get("done", False)}
+                 "done": e.get("done", False)}
                 for e in evs
                 if (not dfrom or e["date"] >= dfrom)
                 and (not dto or e["date"] <= dto)
@@ -218,7 +216,6 @@ def _exec_tool(name, args, actions):
         if name == "add_event":
             cleaned, errors = storage.validate_event({
                 "title": args.get("title"), "date": args.get("date"), "time": args.get("time"),
-                "priority": args.get("priority") or "中",
                 "remind_minutes": args.get("remind_minutes", 15),
                 "notes": args.get("notes", ""),
             })
@@ -229,7 +226,7 @@ def _exec_tool(name, args, actions):
             return {"ok": True, "event": {"id": ev["id"], "title": ev["title"],
                                           "date": ev["date"], "time": ev["time"]}}
         if name == "update_event":
-            fields = ("title", "date", "time", "priority", "remind_minutes", "notes")
+            fields = ("title", "date", "time", "remind_minutes", "notes")
             payload = {k: args[k] for k in fields if k in args}
             ev = storage.update_event(args.get("event_id"), payload, partial=True)
             if ev is None:
@@ -440,7 +437,6 @@ def _aggregate(scope="month", include_heatmap=False):
     overdue_ms = sum(1 for lt in lts for m in lt["milestones"]
                      if m.get("deadline") and m["deadline"] < today.isoformat()
                      and not m.get("done"))
-    pending = [e for e in events if not e.get("done")]
 
     def day_stat(day):
         evs = [e for e in events if e["date"] == day.isoformat()]
@@ -449,8 +445,7 @@ def _aggregate(scope="month", include_heatmap=False):
 
     def upcoming(days=7):
         a, b = today.isoformat(), (today + timedelta(days=days)).isoformat()
-        out = [{"title": e["title"], "date": e["date"], "time": e["time"],
-                "priority": e.get("priority", "中")}
+        out = [{"title": e["title"], "date": e["date"], "time": e["time"]}
                for e in events if not e.get("done") and a <= e["date"] <= b]
         out.sort(key=lambda x: (x["date"], x["time"]))
         return out[:20]
@@ -470,8 +465,6 @@ def _aggregate(scope="month", include_heatmap=False):
                       "overdue": overdue_ms},
             "rate": round(done / total * 100) if total else 0,
             "days": days, "prev_week_done": prev_done,
-            "pending_by_priority": {p: sum(1 for e in pending if e.get("priority") == p)
-                                    for p in ("高", "中", "低")},
             "upcoming_7_days": upcoming(7),
         })
     elif scope == "longterm":
@@ -520,8 +513,6 @@ def _aggregate(scope="month", include_heatmap=False):
                       "overdue": overdue_ms},
             "rate": round(done / total * 100) if total else 0,
             "weeks": weeks,
-            "pending_by_priority": {p: sum(1 for e in pending if e.get("priority") == p)
-                                    for p in ("高", "中", "低")},
             "longterms": lt_brief,
             "upcoming_7_days": upcoming(7),
         })

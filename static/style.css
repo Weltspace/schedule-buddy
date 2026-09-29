@@ -125,9 +125,6 @@ select:focus, input:focus { border-color: var(--primary); }
   transition: transform .15s, box-shadow .15s;
 }
 .event-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.event-card.p-高 { border-left-color: var(--red); }
-.event-card.p-中 { border-left-color: var(--yellow); }
-.event-card.p-低 { border-left-color: var(--green); }
 .event-card.done { opacity: .55; }
 .event-card.done .ev-title { text-decoration: line-through; }
 .ev-time {
@@ -136,11 +133,8 @@ select:focus, input:focus { border-color: var(--primary); }
 }
 .ev-main { flex: 1; min-width: 0; }
 .ev-title { font-size: 15px; font-weight: 600; word-break: break-all; display: flex; align-items: center; gap: 8px; }
-/* 优先级彩色圆点（代替 emoji，颜色与左侧竖条一致） */
+/* 标题前小圆点 */
 .ev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
-.event-card.p-高 .ev-dot { background: var(--red); }
-.event-card.p-中 .ev-dot { background: var(--yellow); }
-.event-card.p-低 .ev-dot { background: var(--green); }
 .ev-meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
 /* 分类：按分类着色的小标签 */
 .ev-tag { border-radius: 6px; padding: 1px 8px; background: var(--bg); flex-shrink: 0; }
@@ -192,9 +186,6 @@ select:focus, input:focus { border-color: var(--primary); }
   font-size: 12px; background: var(--bg); border-radius: 8px; padding: 6px 8px;
   margin-bottom: 6px; cursor: pointer; border-left: 3px solid var(--muted);
 }
-.wc-event.p-高 { border-left-color: var(--red); }
-.wc-event.p-中 { border-left-color: var(--yellow); }
-.wc-event.p-低 { border-left-color: var(--green); }
 .wc-event.done { opacity: .5; text-decoration: line-through; }
 .wc-event .t { font-weight: 700; color: var(--primary); }
 .wc-event .n { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
