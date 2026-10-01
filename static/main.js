@@ -1173,7 +1173,32 @@ $("#lt-list").addEventListener("dragend", commitDrag);
  * 【全部用 Touch 事件而非 Pointer 事件】——部分安卓 WebView 会把滑动
  * 交给原生手势处理后掐断 pointer 事件流（pointercancel），
  * touchstart/touchmove/touchend 是最稳的通道（实测 v2.0 踩坑）。 */
-const touchDrag = { timer: null, active: false, x: 0, y: 0, el: null, idx: 0, baseDx: 0, baseDy: 0 };
+const touchDrag = { timer: null, active: false, x: 0, y: 0, el: null, idx: 0, baseDx: 0, baseDy: 0, px: null, py: null, raf: 0 };
+
+/* 拖拽边缘自动滚动（参考 SortableJS AutoScroll 插件）：手指贴近屏幕上/下
+ * 边缘时列表按贴近程度加速滚动，卡片可被拖出单屏；滚动位移实时补偿进
+ * 跟随偏移（baseDy），卡片始终钉在手指下，中途的换位照常走 FLIP */
+function autoScrollLoop() {
+  if (!touchDrag.active) { touchDrag.raf = 0; return; }
+  if (touchDrag.py != null) {
+    const edge = 80, maxSpeed = 11;
+    const vh = innerHeight;
+    let v = 0;
+    if (touchDrag.py < edge) v = -Math.round((edge - touchDrag.py) / edge * maxSpeed);
+    else if (touchDrag.py > vh - edge) v = Math.round((touchDrag.py - (vh - edge)) / edge * maxSpeed);
+    if (v) {
+      const sc = document.scrollingElement || document.documentElement;
+      const before = sc.scrollTop;
+      sc.scrollTop = before + v;
+      const d = sc.scrollTop - before;
+      if (d) {
+        touchDrag.baseDy += d;
+        dragFollowMove(touchDrag.px, touchDrag.py);
+      }
+    }
+  }
+  touchDrag.raf = requestAnimationFrame(autoScrollLoop);
+}
 
 /* FLIP"挤走"动效：DOM 挪动前给兄弟元素拍快照，挪完让它们从旧位置滑到新位置 */
 function flipCapture(parent, dragged) {
@@ -1208,11 +1233,14 @@ function activateDrag(ms, item, el) {
   touchDrag.idx = [...el.parentElement.children].indexOf(el);
   touchDrag.baseDx = 0;
   touchDrag.baseDy = 0;
+  touchDrag.px = touchDrag.x;
+  touchDrag.py = touchDrag.y;
   el.style.transition = "none";
   el.style.zIndex = 5;
   el.style.opacity = ".92";
   document.body.classList.add("touch-dragging");
   if (navigator.vibrate) navigator.vibrate(30);
+  if (!touchDrag.raf) touchDrag.raf = requestAnimationFrame(autoScrollLoop);
 }
 
 $("#lt-list").addEventListener("touchstart", (e) => {
@@ -1279,11 +1307,14 @@ $("#lt-list").addEventListener("touchmove", (e) => {
     return;
   }
   e.preventDefault();
+  touchDrag.px = t.clientX;
+  touchDrag.py = t.clientY;
   dragFollowMove(t.clientX, t.clientY);
 }, { passive: false });
 
 function endTouchDrag() {
   if (touchDrag.timer != null) { clearTimeout(touchDrag.timer); touchDrag.timer = null; }
+  if (touchDrag.raf) { cancelAnimationFrame(touchDrag.raf); touchDrag.raf = 0; }
   if (!touchDrag.active) return;
   touchDrag.active = false;
   if (touchDrag.el) {
