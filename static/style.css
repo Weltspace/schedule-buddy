@@ -734,6 +734,8 @@ body.apk-mode #sync-apk-hint { display: block; }
 }
 
 /* ---------- 触屏专属（body.touch-mode） ---------- */
+/* 关掉浏览器原生下拉刷新/回弹，把顶部下拉手势让给快捷条 */
+body.touch-mode { overscroll-behavior-y: contain; }
 /* 长按拖拽修复：不许长按触发系统文字选择/长按菜单（会抢走手势导致拖不动） */
 body.touch-mode .lt-item,
 body.touch-mode .lt-ms {
@@ -741,14 +743,25 @@ body.touch-mode .lt-ms {
   -webkit-touch-callout: none;
 }
 
-/* 手机快捷操作条：页面右滑呼出，几秒后或左滑收起（顶栏隐藏后的 设置/添加 入口） */
+/* 拖拽把手：按住直拖（无需长按），桌面同样显示作为可拖提示 */
+.drag-grip {
+  display: flex; align-items: center; flex-shrink: 0;
+  color: var(--muted); opacity: .4; cursor: grab;
+}
+.drag-grip:active { cursor: grabbing; }
+.drag-grip svg { width: 13px; height: 16px; fill: currentColor; stroke: none; }
+.lt-item .drag-grip { align-self: center; margin-right: 4px; }
+.lt-ms .drag-grip { align-self: flex-start; margin-top: 1px; margin-right: 2px; }
+.lt-ms .drag-grip svg { width: 11px; height: 14px; }
+
+/* 手机快捷操作条：页面顶部下拉呼出（跟手），轻点外部/上滑/超时收起 */
 .quick-tray {
   position: fixed; top: 10px; left: 14px; right: 14px; z-index: 45;
   display: none; align-items: center; justify-content: center; gap: 10px;
   padding: 10px 14px; border-radius: 999px;
   background: rgba(255, 255, 255, .95);
   box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
-  transform: translateY(-160%); transition: transform .28s ease;
+  transform: translateY(-130px); transition: transform .28s ease;
   backdrop-filter: blur(12px) saturate(1.3);
   -webkit-backdrop-filter: blur(12px) saturate(1.3);
 }

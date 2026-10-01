@@ -2,7 +2,7 @@
  * 电脑版页面不注册 SW（index.html 只在 https 下注册）。
  * 策略：静态资源（下方列表）缓存优先、后台更新；其余同源 GET 先网络后缓存兜底；
  * 非同源（GLM API）与非 GET（/api 写请求）一律不缓存。 */
-const CACHE = "schedule-buddy-v12";
+const CACHE = "schedule-buddy-v13";
 const PRECACHE = [
   "./",
   "index.html",

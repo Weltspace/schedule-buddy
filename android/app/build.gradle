@@ -10,7 +10,7 @@ android {
         applicationId "com.weltspace.schedulebuddy"
         minSdk 24
         targetSdk 34
-        versionCode 9
+        versionCode 10
         versionName "2.0"
     }
 

@@ -10,6 +10,7 @@ const ICONS = {
   trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   x: '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  grip: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="5.5" r="1.7"/><circle cx="15.5" cy="5.5" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15.5" cy="12" r="1.7"/><circle cx="9" cy="18.5" r="1.7"/><circle cx="15.5" cy="18.5" r="1.7"/></svg>',
 };
 
 /* ---------- i18n（只翻译界面文字；日程内容、分类的存储值保持中文） ---------- */
@@ -246,7 +247,11 @@ let reportWeek = null;  // 周报锚点（周一的 Date）
  * ④ APK 里原生 onPageFinished 给 body 加 apk-mode 时激活。
  * 手势处理器无条件注册（鼠标事件在入口处被过滤），因此①失败也不影响。 */
 function touchModeOn() {
-  if (!document.body.classList.contains("touch-mode")) document.body.classList.add("touch-mode");
+  if (!document.body.classList.contains("touch-mode")) {
+    document.body.classList.add("touch-mode");
+    // 关掉浏览器原生下拉刷新/回弹，把顶部下拉手势让给快捷条
+    document.documentElement.style.overscrollBehaviorY = "contain";
+  }
 }
 const TOUCH = (typeof matchMedia === "function"
   && (matchMedia("(hover: none)").matches || matchMedia("(pointer: coarse)").matches))
@@ -672,6 +677,7 @@ function renderLongterms() {
       const overdue = m.deadline && m.deadline < todayStr();
       return `
         <li class="lt-ms ${m.done ? "done" : ""}" draggable="true" data-ms="${m.id}">
+          <span class="drag-grip">${ICONS.grip}</span>
           <input type="checkbox" class="lt-ms-check" data-ms="${m.id}" ${m.done ? "checked" : ""}>
           <span class="lt-ms-body">
             <span class="lt-ms-text">${escapeHtml(m.text)}</span>
@@ -688,6 +694,7 @@ function renderLongterms() {
     return `
     <div class="lt-item" draggable="true" data-lt="${lt.id}">
       <div class="lt-head">
+        <span class="drag-grip">${ICONS.grip}</span>
         <div class="lt-title">${escapeHtml(lt.title)}</div>
         <div class="lt-actions">
           <button class="lt-btn lt-edit-btn" title="${t("act_edit")}">${ICONS.pencil}</button>
@@ -1188,37 +1195,50 @@ function flipCapture(parent, dragged) {
   };
 }
 
+function activateDrag(ms, item, el) {
+  touchDrag.active = true;
+  if (ms) {
+    dragMsId = ms.dataset.ms;
+    dragMsLt = item ? item.dataset.lt : null;
+  } else {
+    dragLtId = item.dataset.lt;
+  }
+  el.classList.add("dragging");
+  touchDrag.el = el;
+  touchDrag.idx = [...el.parentElement.children].indexOf(el);
+  touchDrag.baseDx = 0;
+  touchDrag.baseDy = 0;
+  el.style.transition = "none";
+  el.style.zIndex = 5;
+  el.style.opacity = ".92";
+  document.body.classList.add("touch-dragging");
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
 $("#lt-list").addEventListener("touchstart", (e) => {
   const t = e.touches[0];
-  if (!t || t.target.closest("input, textarea, select, button, .ddl-pick")) return;
+  if (!t) return;
   const ms = t.target.closest(".lt-ms");
   const item = t.target.closest(".lt-item");
   if (!ms && !item) return;
   const el = ms || item;
+  // 握把起手：立即拖拽（touchstart 阻断默认行为，浏览器无法抢滚动）
+  if (t.target.closest(".drag-grip")) {
+    touchDrag.x = t.clientX;
+    touchDrag.y = t.clientY;
+    activateDrag(ms, item, el);
+    e.preventDefault();
+    return;
+  }
+  if (t.target.closest("input, textarea, select, button, .ddl-pick")) return;
   touchDrag.active = false;
   touchDrag.x = t.clientX;
   touchDrag.y = t.clientY;
   touchDrag.timer = setTimeout(() => {
     touchDrag.timer = null;
-    touchDrag.active = true;
-    if (ms) {
-      dragMsId = ms.dataset.ms;
-      dragMsLt = item ? item.dataset.lt : null;
-    } else {
-      dragLtId = item.dataset.lt;
-    }
-    el.classList.add("dragging");
-    touchDrag.el = el;
-    touchDrag.idx = [...el.parentElement.children].indexOf(el);
-    touchDrag.baseDx = 0;
-    touchDrag.baseDy = 0;
-    el.style.transition = "none";
-    el.style.zIndex = 5;
-    el.style.opacity = ".92";
-    document.body.classList.add("touch-dragging");
-    if (navigator.vibrate) navigator.vibrate(30);
+    activateDrag(ms, item, el);
   }, 250);
-}, { passive: true });
+}, { passive: false });
 
 /* 触屏拖拽跟随：被拖元素贴着手走，其他元素被 FLIP 挤开 */
 function dragFollowMove(x, y) {
@@ -1303,6 +1323,7 @@ const tray = $("#quick-tray");
 let trayTimer = null;
 function showTray() {
   tray.classList.add("open");
+  trayOpenedAt = Date.now();
   clearTimeout(trayTimer);
   trayTimer = setTimeout(hideTray, 5000);
 }
@@ -1311,26 +1332,68 @@ $("#qt-event").onclick = () => { hideTray(); openModal(); };
 $("#qt-goal").onclick = () => { hideTray(); switchView("lt"); openLtModal(); };
 $("#qt-settings").onclick = () => { hideTray(); openSettings(); };
 
-let pageSwipe = null;
+/* 页面顶部下拉呼出快捷条（微信小程序式）：任何位置起手都行（含卡片上）。
+ * 页面滚到顶后继续下拉即跟手拉出，松手过阈值吸附展开；
+ * 收起方式：轻点任意处 / 上滑 / 点按钮 / 5 秒超时。 */
+let pull = null;
 document.addEventListener("touchstart", (e) => {
   touchModeOn();
   const t = e.touches[0];
   if (!t) return;
-  // 卡片/子任务是行级手势的地盘；交互元素和弹层不触发页面手势
-  if (t.target.closest("input, textarea, select, button, a, .modal-mask, .dlg, .event-card, .lt-item, .lt-ms")) {
-    pageSwipe = null;
+  if (t.target.closest("input, textarea, select, button, .ddl-pick, .modal-mask, .dlg, #quick-tray")) {
+    pull = null;
     return;
   }
-  pageSwipe = { x: t.clientX, y: t.clientY };
+  pull = { x: t.clientX, y: t.clientY, dy: 0, active: false };
 }, { passive: true });
-document.addEventListener("touchend", (e) => {
-  if (!pageSwipe) return;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - pageSwipe.x, dy = t.clientY - pageSwipe.y;
-  pageSwipe = null;
-  if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 2) showTray();       // 右滑呼出
-  else if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 2) hideTray(); // 左滑收起
+document.addEventListener("touchmove", (e) => {
+  if (!pull) return;
+  if (touchDrag.active) { pull = null; return; }  // 拖拽排序优先
+  const t = e.touches[0];
+  if (!t) return;
+  const dx = t.clientX - pull.x, dy = t.clientY - pull.y;
+  if (!pull.active) {
+    if (window.scrollY > 0) { pull = null; return; }           // 不在页面顶部，交给滚动
+    if (Math.abs(dx) > Math.abs(dy)) { pull = null; return; }  // 横向是行级手势的地盘
+    if (dy > 18) pull.active = true;                           // 顶部明显下拉
+    else if (dy < -10) { pull = null; return; }
+    else return;
+  }
+  e.preventDefault();
+  pull.dy = Math.max(0, dy);
+  tray.style.transition = "none";
+  tray.style.transform = `translateY(${Math.min(0, -130 + pull.dy * 1.15)}px)`;
+  if (pull.dy >= 100 && !pull.crossed) { pull.crossed = true; if (navigator.vibrate) navigator.vibrate(15); }
+  if (pull.dy < 100) pull.crossed = false;
+}, { passive: false });
+document.addEventListener("touchend", () => {
+  if (pull && pull.active) {
+    tray.style.transition = "";
+    tray.style.transform = "";
+    if (pull.dy >= 100) showTray(); else hideTray();
+  }
+  pull = null;
 }, { passive: true });
+
+/* 展开时上滑或轻点外部收起 */
+let trayCloseSwipe = null;
+document.addEventListener("touchstart", (e) => {
+  if (!tray.classList.contains("open")) { trayCloseSwipe = null; return; }
+  const t = e.touches[0];
+  trayCloseSwipe = (t && !tray.contains(t.target)) ? { y: t.clientY } : null;
+}, { passive: true });
+document.addEventListener("touchmove", (e) => {
+  if (!trayCloseSwipe) return;
+  const t = e.touches[0];
+  if (t && t.clientY - trayCloseSwipe.y < -30) { hideTray(); trayCloseSwipe = null; }
+}, { passive: true });
+document.addEventListener("touchend", () => { trayCloseSwipe = null; }, { passive: true });
+let trayOpenedAt = 0;
+document.addEventListener("click", (e) => {
+  if (!tray.classList.contains("open")) return;
+  if (Date.now() - trayOpenedAt < 450) return;  // 刚拉开的那一下别误关
+  if (!tray.contains(e.target)) hideTray();
+});
 
 /* 行级左滑浮现操作按钮 */
 const ROW_SEL = ".event-card, .lt-item, .lt-ms";
