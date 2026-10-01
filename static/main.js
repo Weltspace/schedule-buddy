@@ -1156,19 +1156,22 @@ $("#lt-list").addEventListener("dragend", commitDrag);
 
 /* 触屏拖拽：HTML5 DnD 在手机上不可用，改为长按 250ms 启动，
  * 插入位置计算与桌面拖拽共用（moveDragging）。
- * 长按生效前移动超过 10px 视为滚动意图，取消拖拽。 */
+ * 长按生效前移动超过 10px 视为滚动意图，取消拖拽。
+ * 【全部用 Touch 事件而非 Pointer 事件】——部分安卓 WebView 会把滑动
+ * 交给原生手势处理后掐断 pointer 事件流（pointercancel），
+ * touchstart/touchmove/touchend 是最稳的通道（实测 v2.0 踩坑）。 */
 const touchDrag = { timer: null, active: false, x: 0, y: 0 };
 
-$("#lt-list").addEventListener("pointerdown", (e) => {
-  if (e.pointerType === "mouse") return;
-  if (e.target.closest("input, textarea, select, button, .ddl-pick")) return;
-  const ms = e.target.closest(".lt-ms");
-  const item = e.target.closest(".lt-item");
+$("#lt-list").addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  if (!t || t.target.closest("input, textarea, select, button, .ddl-pick")) return;
+  const ms = t.target.closest(".lt-ms");
+  const item = t.target.closest(".lt-item");
   if (!ms && !item) return;
   const el = ms || item;
   touchDrag.active = false;
-  touchDrag.x = e.clientX;
-  touchDrag.y = e.clientY;
+  touchDrag.x = t.clientX;
+  touchDrag.y = t.clientY;
   touchDrag.timer = setTimeout(() => {
     touchDrag.timer = null;
     touchDrag.active = true;
@@ -1182,20 +1185,22 @@ $("#lt-list").addEventListener("pointerdown", (e) => {
     document.body.classList.add("touch-dragging");
     if (navigator.vibrate) navigator.vibrate(30);
   }, 250);
-});
+}, { passive: true });
 
-$("#lt-list").addEventListener("pointermove", (e) => {
+$("#lt-list").addEventListener("touchmove", (e) => {
+  const t = e.touches[0];
+  if (!t) return;
   if (touchDrag.timer == null && !touchDrag.active) return;
   if (!touchDrag.active) {
-    if (Math.hypot(e.clientX - touchDrag.x, e.clientY - touchDrag.y) > 10) {
+    if (Math.hypot(t.clientX - touchDrag.x, t.clientY - touchDrag.y) > 10) {
       clearTimeout(touchDrag.timer);
       touchDrag.timer = null;
     }
     return;
   }
   e.preventDefault();
-  moveDragging(e.clientX, e.clientY);
-});
+  moveDragging(t.clientX, t.clientY);
+}, { passive: false });
 
 function endTouchDrag() {
   if (touchDrag.timer != null) { clearTimeout(touchDrag.timer); touchDrag.timer = null; }
@@ -1205,8 +1210,8 @@ function endTouchDrag() {
   setTimeout(() => { justDragged = false; }, 350);
   commitDrag();
 }
-$("#lt-list").addEventListener("pointerup", endTouchDrag);
-$("#lt-list").addEventListener("pointercancel", endTouchDrag);
+$("#lt-list").addEventListener("touchend", endTouchDrag);
+$("#lt-list").addEventListener("touchcancel", endTouchDrag);
 // 长按生效后浏览器会尝试接管滚动，必须阻止，否则拖不动
 document.addEventListener("touchmove", (e) => {
   if (touchDrag.active) e.preventDefault();
@@ -1217,8 +1222,8 @@ document.addEventListener("touchmove", (e) => {
  * ① 页面右滑 → 顶部滑出快捷条（＋日程/＋目标/设置），5 秒自动收起
  * ② 卡片/子任务左滑 → 操作按钮浮现，右滑或点别处收起
  * ③ 长按 250ms 拖拽排序不变（横滑先到阈值就走①②，互不干扰）
- * 处理器无条件注册：鼠标事件在入口被过滤，桌面不受影响；
- * 首次触控即时激活 touch-mode（APK 里媒体查询不可靠的兜底）。 */
+ * 全部走 Touch 事件（理由见上）；首次触控即时激活 touch-mode
+ * （APK 里媒体查询不可靠的兜底）。 */
 // 长按拖拽失败的头号原因：长按触发了系统文字选择/长按菜单，抢走手势
 document.addEventListener("contextmenu", (e) => {
   if (document.body.classList.contains("touch-mode") && e.target.closest(".lt-item, .lt-ms")) {
@@ -1240,19 +1245,21 @@ $("#qt-goal").onclick = () => { hideTray(); switchView("lt"); openLtModal(); };
 $("#qt-settings").onclick = () => { hideTray(); openSettings(); };
 
 let pageSwipe = null;
-document.addEventListener("pointerdown", (e) => {
-  if (e.pointerType === "mouse") return;
+document.addEventListener("touchstart", (e) => {
   touchModeOn();
+  const t = e.touches[0];
+  if (!t) return;
   // 卡片/子任务是行级手势的地盘；交互元素和弹层不触发页面手势
-  if (e.target.closest("input, textarea, select, button, a, .modal-mask, .dlg, .event-card, .lt-item, .lt-ms")) {
+  if (t.target.closest("input, textarea, select, button, a, .modal-mask, .dlg, .event-card, .lt-item, .lt-ms")) {
     pageSwipe = null;
     return;
   }
-  pageSwipe = { x: e.clientX, y: e.clientY };
+  pageSwipe = { x: t.clientX, y: t.clientY };
 }, { passive: true });
-document.addEventListener("pointerup", (e) => {
+document.addEventListener("touchend", (e) => {
   if (!pageSwipe) return;
-  const dx = e.clientX - pageSwipe.x, dy = e.clientY - pageSwipe.y;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - pageSwipe.x, dy = t.clientY - pageSwipe.y;
   pageSwipe = null;
   if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 2) showTray();       // 右滑呼出
   else if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 2) hideTray(); // 左滑收起
@@ -1264,27 +1271,32 @@ function closeSwiped(except) {
   $$(".swiped").forEach(el => { if (el !== except) el.classList.remove("swiped"); });
 }
 let rowSwipe = null;
-document.addEventListener("pointerdown", (e) => {
-  if (e.pointerType === "mouse") return;
-  touchModeOn();
-  const row = e.target.closest(ROW_SEL);
+document.addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  if (!t) return;
+  const row = t.target.closest(ROW_SEL);
   if (!row) { closeSwiped(null); return; }  // 点空白处收起已展开的行
-  if (e.target.closest("input, textarea, select, button, .ddl-pick")) { rowSwipe = null; return; }
-  rowSwipe = { el: row, x: e.clientX, y: e.clientY, locked: false };
+  if (t.target.closest("input, textarea, select, button, .ddl-pick")) { rowSwipe = null; return; }
+  rowSwipe = { el: row, x: t.clientX, y: t.clientY, locked: false };
 }, { passive: true });
-document.addEventListener("pointermove", (e) => {
-  if (!rowSwipe || rowSwipe.locked) return;
-  if (touchDrag.active) { rowSwipe = null; return; }  // 长按拖拽已接管
-  const dx = e.clientX - rowSwipe.x, dy = e.clientY - rowSwipe.y;
-  // 横向意图明确才锁存：竖向留给滚动，长按留给拖拽
-  if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-    rowSwipe.locked = true;
-    if (dx < 0) { closeSwiped(rowSwipe.el); rowSwipe.el.classList.add("swiped"); }
-    else rowSwipe.el.classList.remove("swiped");
+document.addEventListener("touchmove", (e) => {
+  if (!rowSwipe) return;
+  const t = e.touches[0];
+  if (!t) return;
+  if (!rowSwipe.locked) {
+    if (touchDrag.active) { rowSwipe = null; return; }  // 长按拖拽已接管
+    const dx = t.clientX - rowSwipe.x, dy = t.clientY - rowSwipe.y;
+    // 横向意图明确才锁存：竖向留给滚动，长按留给拖拽
+    if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      rowSwipe.locked = true;
+      if (dx < 0) { closeSwiped(rowSwipe.el); rowSwipe.el.classList.add("swiped"); }
+      else rowSwipe.el.classList.remove("swiped");
+    }
   }
-}, { passive: true });
-document.addEventListener("pointerup", () => { rowSwipe = null; }, { passive: true });
-document.addEventListener("pointercancel", () => { rowSwipe = null; }, { passive: true });
+  if (rowSwipe.locked) e.preventDefault();  // 锁存后阻止页面滚动干扰横滑
+}, { passive: false });
+document.addEventListener("touchend", () => { rowSwipe = null; }, { passive: true });
+document.addEventListener("touchcancel", () => { rowSwipe = null; }, { passive: true });
 
 /* ---------- 报表翻周（统计视图已移除，接口保留给 agent 用） ---------- */
 

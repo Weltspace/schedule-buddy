@@ -17,7 +17,8 @@
   --card-alpha: 0.9;
   --surface: rgba(255, 255, 255, var(--card-alpha));
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* -webkit-tap-highlight-color：安卓 WebView 点按默认闪一个淡蓝色高亮块，关掉 */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
 button { font-family: inherit; }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--primary); outline-offset: 1px;
@@ -156,7 +157,9 @@ select:focus, input:focus { border-color: var(--primary); }
 .ev-act.act-del:hover { color: var(--red); background: rgba(239, 68, 68, .10); }
 /* 触屏（body.touch-mode 由 JS 按 hover:none 加）：操作按钮平时隐藏，
    卡片左滑浮现（.swiped），右滑/点别处收起 —— 由 main.js 的行级手势模块驱动。
-   touch-action: pan-y 明确"横向手势归页面"：浏览器不得为横滑触发 pointercancel */
+   touch-action: pan-y 明确"横向手势归页面"：浏览器不得为横滑触发 pointercancel；
+   main 整体同样声明（页面右滑快捷条的背景区域），pinch-zoom 保留双指缩放 */
+body.touch-mode main { touch-action: pan-y pinch-zoom; }
 body.touch-mode .event-card,
 body.touch-mode .lt-item,
 body.touch-mode .lt-ms { touch-action: pan-y; }
