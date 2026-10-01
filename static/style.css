@@ -341,9 +341,11 @@ body.touch-mode .lt-item.swiped .lt-actions { opacity: 1; pointer-events: auto; 
 .ms-due.over { color: var(--red); }
 .ms-ops { display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity .15s; }
 .lt-ms:hover .ms-ops, .lt-ms:focus-within .ms-ops { opacity: 1; }
-/* 触屏：子任务操作图标同样左滑浮现 */
-body.touch-mode .ms-ops { opacity: 0; }
-body.touch-mode .lt-ms.swiped .ms-ops { opacity: 1; }
+/* 触屏：子任务操作图标同样左滑浮现。
+   隐藏时必须连 pointer-events 一起关掉，否则看不见的按钮照样吃触摸，
+   手指落在它上面左滑就没反应（v2.0 踩过） */
+body.touch-mode .ms-ops { opacity: 0; pointer-events: none; }
+body.touch-mode .lt-ms.swiped .ms-ops { opacity: 1; pointer-events: auto; }
 /* 日期按钮只显示小图标，不带文字 */
 .ms-ddl .ddl-btn { padding: 2px 5px; border-radius: 6px; font-size: 12px; }
 .ms-ddl .ddl-text { display: none; }

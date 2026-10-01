@@ -1114,8 +1114,11 @@ function moveDragging(x, y) {
       if (y <= r.bottom) return x < r.left + r.width / 2;
       return false;
     });
+    if ((ref && dragging.nextElementSibling === ref) || (!ref && dragging === list.lastElementChild)) return;
+    const play = flipCapture(list, dragging);
     if (ref) list.insertBefore(dragging, ref);
     else list.appendChild(dragging);
+    play();
   } else if (dragMsId) {
     const dragging = list.querySelector(".lt-ms.dragging");
     if (!dragging) return;
@@ -1123,8 +1126,11 @@ function moveDragging(x, y) {
     if (!scopeList || !scopeList.contains(dragging)) return;
     const items = [...scopeList.querySelectorAll(".lt-ms")].filter(it => it !== dragging);
     const ref = items.find(it => y < it.getBoundingClientRect().top + it.getBoundingClientRect().height / 2);
+    if ((ref && dragging.nextElementSibling === ref) || (!ref && dragging === scopeList.lastElementChild)) return;
+    const play = flipCapture(scopeList, dragging);
     if (ref) scopeList.insertBefore(dragging, ref);
     else scopeList.appendChild(dragging);
+    play();
   }
 }
 
@@ -1160,7 +1166,27 @@ $("#lt-list").addEventListener("dragend", commitDrag);
  * 【全部用 Touch 事件而非 Pointer 事件】——部分安卓 WebView 会把滑动
  * 交给原生手势处理后掐断 pointer 事件流（pointercancel），
  * touchstart/touchmove/touchend 是最稳的通道（实测 v2.0 踩坑）。 */
-const touchDrag = { timer: null, active: false, x: 0, y: 0 };
+const touchDrag = { timer: null, active: false, x: 0, y: 0, el: null, idx: 0, baseDx: 0, baseDy: 0 };
+
+/* FLIP"挤走"动效：DOM 挪动前给兄弟元素拍快照，挪完让它们从旧位置滑到新位置 */
+function flipCapture(parent, dragged) {
+  const sibs = [...parent.children].filter(c => c !== dragged);
+  const before = new Map(sibs.map(s => [s, s.getBoundingClientRect()]));
+  return () => {
+    sibs.forEach(s => {
+      const b = before.get(s);
+      const a = s.getBoundingClientRect();
+      const dx = b.left - a.left, dy = b.top - a.top;
+      if (!dx && !dy) return;
+      s.style.transition = "none";
+      s.style.transform = `translate(${dx}px, ${dy}px)`;
+      void s.offsetHeight;  // 强制回流，确保反向位移先生效
+      s.style.transition = "transform .2s ease";
+      s.style.transform = "";
+      s.addEventListener("transitionend", () => { s.style.transition = ""; }, { once: true });
+    });
+  };
+}
 
 $("#lt-list").addEventListener("touchstart", (e) => {
   const t = e.touches[0];
@@ -1182,30 +1208,71 @@ $("#lt-list").addEventListener("touchstart", (e) => {
       dragLtId = item.dataset.lt;
     }
     el.classList.add("dragging");
+    touchDrag.el = el;
+    touchDrag.idx = [...el.parentElement.children].indexOf(el);
+    touchDrag.baseDx = 0;
+    touchDrag.baseDy = 0;
+    el.style.transition = "none";
+    el.style.zIndex = 5;
+    el.style.opacity = ".92";
     document.body.classList.add("touch-dragging");
     if (navigator.vibrate) navigator.vibrate(30);
   }, 250);
 }, { passive: true });
+
+/* 触屏拖拽跟随：被拖元素贴着手走，其他元素被 FLIP 挤开 */
+function dragFollowMove(x, y) {
+  const el = touchDrag.el;
+  if (!el) return;
+  const dx = x - touchDrag.x, dy = y - touchDrag.y;
+  el.style.transform = `translate(${dx + touchDrag.baseDx}px, ${dy + touchDrag.baseDy}px) scale(1.02)`;
+  const parent = el.parentElement;
+  const sibs = [...parent.children].filter(c => c !== el);
+  let idx = sibs.findIndex(s => {
+    const r = s.getBoundingClientRect();
+    return y < r.top + r.height / 2;
+  });
+  if (idx === -1) idx = sibs.length;
+  if (idx === touchDrag.idx) return;
+  const play = flipCapture(parent, el);
+  const before = el.getBoundingClientRect();
+  if (idx === sibs.length) parent.appendChild(el);
+  else parent.insertBefore(el, sibs[idx]);
+  touchDrag.idx = idx;
+  const after = el.getBoundingClientRect();
+  // DOM 位置变了，把布局位移补进跟随偏移，手指始终钉在卡片上
+  touchDrag.baseDx += before.left - after.left;
+  touchDrag.baseDy += before.top - after.top;
+  el.style.transform = `translate(${dx + touchDrag.baseDx}px, ${dy + touchDrag.baseDy}px) scale(1.02)`;
+  play();
+}
 
 $("#lt-list").addEventListener("touchmove", (e) => {
   const t = e.touches[0];
   if (!t) return;
   if (touchDrag.timer == null && !touchDrag.active) return;
   if (!touchDrag.active) {
-    if (Math.hypot(t.clientX - touchDrag.x, t.clientY - touchDrag.y) > 10) {
+    if (Math.hypot(t.clientX - touchDrag.x, t.clientY - touchDrag.y) > 14) {
       clearTimeout(touchDrag.timer);
       touchDrag.timer = null;
     }
     return;
   }
   e.preventDefault();
-  moveDragging(t.clientX, t.clientY);
+  dragFollowMove(t.clientX, t.clientY);
 }, { passive: false });
 
 function endTouchDrag() {
   if (touchDrag.timer != null) { clearTimeout(touchDrag.timer); touchDrag.timer = null; }
   if (!touchDrag.active) return;
   touchDrag.active = false;
+  if (touchDrag.el) {
+    touchDrag.el.style.transform = "";
+    touchDrag.el.style.transition = "";
+    touchDrag.el.style.zIndex = "";
+    touchDrag.el.style.opacity = "";
+    touchDrag.el = null;
+  }
   justDragged = true;
   setTimeout(() => { justDragged = false; }, 350);
   commitDrag();
@@ -1276,7 +1343,9 @@ document.addEventListener("touchstart", (e) => {
   if (!t) return;
   const row = t.target.closest(ROW_SEL);
   if (!row) { closeSwiped(null); return; }  // 点空白处收起已展开的行
-  if (t.target.closest("input, textarea, select, button, .ddl-pick")) { rowSwipe = null; return; }
+  // 只排除输入类控件；行内按钮（编辑/删除/日期）允许起手左滑——
+  // 无位移的轻点仍走 click，带位移的滑动则由下面锁存
+  if (t.target.closest("input, textarea, select, .ddl-pick")) { rowSwipe = null; return; }
   rowSwipe = { el: row, x: t.clientX, y: t.clientY, locked: false };
 }, { passive: true });
 document.addEventListener("touchmove", (e) => {
