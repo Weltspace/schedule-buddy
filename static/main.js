@@ -1364,8 +1364,21 @@ $("#qt-goal").onclick = () => { hideTray(); switchView("lt"); openLtModal(); };
 $("#qt-settings").onclick = () => { hideTray(); openSettings(); };
 
 /* 页面顶部下拉呼出快捷条（微信小程序式）：任何位置起手都行（含卡片上）。
+ * "到顶"的判定沿触摸点向上找真实滚动容器——AI 助手的聊天记录是视图内
+ * 独立滚动区（window.scrollY 恒为 0），只看整页会误判，聊天没到顶也拉出。
  * 页面滚到顶后继续下拉即跟手拉出，松手过阈值吸附展开；
  * 收起方式：轻点任意处 / 上滑 / 点按钮 / 5 秒超时。 */
+function atScrollTop(target) {
+  let el = target;
+  while (el && el !== document.body) {
+    if (el.nodeType === 1) {
+      const cs = getComputedStyle(el);
+      if (/(auto|scroll)/.test(cs.overflowY) && el.scrollTop > 0) return false;
+    }
+    el = el.parentElement;
+  }
+  return (window.scrollY || 0) <= 0;
+}
 let pull = null;
 document.addEventListener("touchstart", (e) => {
   touchModeOn();
@@ -1375,7 +1388,7 @@ document.addEventListener("touchstart", (e) => {
     pull = null;
     return;
   }
-  pull = { x: t.clientX, y: t.clientY, dy: 0, active: false };
+  pull = { x: t.clientX, y: t.clientY, dy: 0, active: false, target: t.target };
 }, { passive: true });
 document.addEventListener("touchmove", (e) => {
   if (!pull) return;
@@ -1384,7 +1397,7 @@ document.addEventListener("touchmove", (e) => {
   if (!t) return;
   const dx = t.clientX - pull.x, dy = t.clientY - pull.y;
   if (!pull.active) {
-    if (window.scrollY > 0) { pull = null; return; }           // 不在页面顶部，交给滚动
+    if (!atScrollTop(pull.target)) { pull = null; return; }    // 还有内容在上方，交给滚动
     if (Math.abs(dx) > Math.abs(dy)) { pull = null; return; }  // 横向是行级手势的地盘
     if (dy > 18) pull.active = true;                           // 顶部明显下拉
     else if (dy < -10) { pull = null; return; }
