@@ -155,7 +155,11 @@ select:focus, input:focus { border-color: var(--primary); }
 .ev-act.act-done:hover { color: var(--green); background: rgba(16, 185, 129, .12); }
 .ev-act.act-del:hover { color: var(--red); background: rgba(239, 68, 68, .10); }
 /* 触屏（body.touch-mode 由 JS 按 hover:none 加）：操作按钮平时隐藏，
-   卡片左滑浮现（.swiped），右滑/点别处收起 —— 由 main.js 的行级手势模块驱动 */
+   卡片左滑浮现（.swiped），右滑/点别处收起 —— 由 main.js 的行级手势模块驱动。
+   touch-action: pan-y 明确"横向手势归页面"：浏览器不得为横滑触发 pointercancel */
+body.touch-mode .event-card,
+body.touch-mode .lt-item,
+body.touch-mode .lt-ms { touch-action: pan-y; }
 body.touch-mode .event-card { flex-wrap: wrap; }
 body.touch-mode .event-card .ev-main { min-width: 0; }
 body.touch-mode .ev-actions {
@@ -323,9 +327,10 @@ body.touch-mode .lt-item.swiped .lt-actions { opacity: 1; pointer-events: auto; 
 .lt-ms:hover { background: rgba(79, 110, 247, .05); }
 .lt-ms.done .lt-ms-text { text-decoration: line-through; color: var(--muted); }
 .lt-ms-body { flex: 1; min-width: 0; }
-.lt-ms-text { display: block; word-break: break-all; }
-/* 勾选框对齐第一行文字的左边（不再垂直居中，多行文字时更均衡） */
-.lt-ms-check { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; margin-top: 3px; }
+/* 行高定死 19px：勾选框（15px + 上边距 2px）的中线正好压在第一行文字的中线上 */
+.lt-ms-text { display: block; word-break: break-all; line-height: 19px; }
+/* 勾选框中线 = 第一行文字中线（19px 行高的一半 9.5 = 上边距 2 + 框高 15 的一半 7.5） */
+.lt-ms-check { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
 /* 文字下方的固定日期行：没设日期也保留高度，悬停时行高永不跳动；
    操作图标（改日期/改名/删除）悬停时出现在这一行里，不会盖住子任务文字 */
 .ms-sub { display: flex; align-items: center; gap: 4px; min-height: 20px; margin-top: 1px; }
@@ -468,10 +473,12 @@ body.has-bg .lt-actions { background: linear-gradient(to right, rgba(255,255,255
 }
 .ai-input-row input:focus { border-color: var(--primary); }
 
-/* AI 两个视图填满视口剩余高度：聊天区伸展、输入行钉在底部（不悬在半空） */
+/* AI 两个视图填满视口剩余高度：聊天区伸展、输入行钉在视口底边（贴到底，不悬空）。
+   95 = 顶栏实际高度 75 + main 顶部内边距 20（用后量实际值，改顶栏要同步） */
 #view-ai, #view-air { display: flex; flex-direction: column; }
-#view-ai { height: calc(100vh - 160px); }
-#view-air { min-height: calc(100vh - 160px); }
+#view-ai { height: calc(100vh - 95px); }
+#view-air { min-height: calc(100vh - 95px); }
+body.no-new main { padding-bottom: 0; }  /* AI 视图自己撑到视口底边，别再垫 60px */
 #view-ai .ai-chat { flex: 1 1 auto; min-height: 0; max-height: none; }
 #view-ai .ai-input-row { margin-top: 10px; }
 #view-air .ai-input-row { margin-top: auto; padding-top: 10px; }
@@ -649,8 +656,9 @@ body.apk-mode #sync-apk-hint { display: block; }
      view-ai 已是弹性列（见上方 #view-ai 规则），聊天区 flex 伸展无需 max-height */
   .ai-chat { max-height: calc(100dvh - 330px); }
   .air-chat { max-height: calc(100dvh - 430px); }
-  #view-ai { height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
-  #view-air { min-height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
+  /* 窄窗口非触屏（桌面缩窗）：顶栏还在，沿用旧预留 */
+  body:not(.touch-mode) #view-ai { height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
+  body:not(.touch-mode) #view-air { min-height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
 
   /* 窄窗口但非触屏（桌面缩窗）：顶栏还在，"＋"缩成图标 */
   #btn-new { font-size: 0; padding: 9px 11px; }
@@ -667,10 +675,13 @@ body.apk-mode #sync-apk-hint { display: block; }
   }
   body.touch-mode .topbar > :not(.tabs) { display: none; }
   body.touch-mode main { padding-top: 12px; }
-  body.touch-mode #view-ai { height: calc(100dvh - 140px - env(safe-area-inset-bottom)); }
-  body.touch-mode #view-air { min-height: calc(100dvh - 140px - env(safe-area-inset-bottom)); }
-  body.touch-mode .ai-chat { max-height: calc(100dvh - 280px); }
-  body.touch-mode .air-chat { max-height: calc(100dvh - 380px); }
+  /* 触屏（手机）：AI 视图精确贴底 —— 75 = main 顶部内边距 12 + 底部标签栏 63；
+     main 的 padding-bottom 与之相等，内容总高恰好一屏，输入行紧贴标签栏 */
+  body.touch-mode #view-ai { height: calc(100dvh - 75px - env(safe-area-inset-bottom)); }
+  body.touch-mode #view-air { min-height: calc(100dvh - 75px - env(safe-area-inset-bottom)); }
+  body.touch-mode.no-new main { padding-bottom: calc(63px + env(safe-area-inset-bottom)); }
+  body.touch-mode .ai-chat { max-height: none; }
+  body.touch-mode .air-chat { max-height: calc(100dvh - 320px); }
 
   /* AI 分析：分段控件 + 开始分析 同一行不换行 */
   .air-top { flex-wrap: nowrap; gap: 8px; }
