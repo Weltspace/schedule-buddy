@@ -18,7 +18,6 @@ const I18N = {
     app_title: "日程助手",
     tab_day: "今天", tab_week: "本周", tab_stats: "统计", tab_long: "长期任务", btn_new: "＋ 新建日程",
     chip_all: "全部", chip_work: "工作", chip_life: "生活", chip_study: "学习", chip_other: "其他",
-    hide_done: "隐藏已完成",
     day_prev: "‹ 前一天", day_next: "后一天 ›", week_prev: "‹ 上一周", week_next: "下一周 ›",
     cap_total: "全部日程", cap_done: "已完成", cap_pending: "待办中", cap_rate: "完成率",
     hm_title: "本月日程热力图", hm_less: "少", hm_more: "多", cat_title: "分类占比",
@@ -30,6 +29,8 @@ const I18N = {
     r_60: "提前 1 小时", r_1440: "提前 1 天",
     f_notes: "备注", ph_notes: "补充说明（可选）", btn_cancel: "取消", btn_save: "保存",
     lt_title: "长期任务", ph_lt_title: "要长期坚持的目标…", lt_add: "添加", ddl_label: "截止日期",
+    lt_modal_new: "新建长期目标", btn_new_lt: "＋ 新建目标",
+    dlg_del_title: "确认删除", dlg_ok: "确定",
     lt_empty: "还没有长期任务，给自己立一个吧！", lt_add_ms: "＋ 添加子任务",
     lt_days_left: "剩 {n} 天", lt_overdue: "已过 {n} 天", lt_ms_empty: "还没有子任务",
     ph_lt_ms: "添加子任务…", lt_confirm_del: "删除长期任务「{t}」？",
@@ -83,8 +84,8 @@ const I18N = {
     sync_state: "同步版本 {v} · {d}",
     sync_dirty_yes: "有未同步的修改", sync_dirty_no: "与上次同步一致",
     sync_bad_file: "不是有效的日程助手同步包",
-    sync_confirm: "导入该同步包将覆盖本地数据（导出于 {time}，版本 {v}，含 {n} 条日程、{m} 个长期任务）。\n确定导入？",
-    sync_confirm_dirty: "注意：本地有未同步的修改，导入会覆盖它们！\n（导出于 {time}，版本 {v}，含 {n} 条日程、{m} 个长期任务）\n确定覆盖？",
+    sync_confirm: "导入该同步包将覆盖本地数据。\n\n导出于 {time} · 版本 {v}\n含 {n} 条日程、{m} 个长期任务",
+    sync_confirm_dirty: "注意：本地有未同步的修改，导入会覆盖它们！\n\n导出于 {time} · 版本 {v}\n含 {n} 条日程、{m} 个长期任务",
     sync_done: "✓ 导入成功（{n} 条日程、{m} 个长期任务）",
     sync_exported: "✓ 已导出，把文件发到另一台设备导入即可同步",
     sync_saved: "✓ 已保存到下载文件夹：{p}",
@@ -94,12 +95,12 @@ const I18N = {
     sync_fail: "同步操作失败",
     set_pwa: "安装到桌面", pwa_install: "安装应用", pwa_installed: "已安装 ✓",
     pwa_hint: "没弹出安装框？在浏览器菜单里选「添加到桌面 / 安装应用」",
+    tray_event: "＋ 日程", tray_goal: "＋ 目标",
   },
   en: {
     app_title: "Schedule Buddy",
     tab_day: "Today", tab_week: "This Week", tab_stats: "Stats", tab_long: "Goals", btn_new: "＋ New Event",
     chip_all: "All", chip_work: "Work", chip_life: "Life", chip_study: "Study", chip_other: "Other",
-    hide_done: "Hide completed",
     day_prev: "‹ Prev Day", day_next: "Next Day ›", week_prev: "‹ Prev Week", week_next: "Next Week ›",
     cap_total: "Total", cap_done: "Completed", cap_pending: "Pending", cap_rate: "Completion",
     hm_title: "This Month", hm_less: "Less", hm_more: "More", cat_title: "By Category",
@@ -111,6 +112,8 @@ const I18N = {
     r_60: "1 hour before", r_1440: "1 day before",
     f_notes: "Notes", ph_notes: "Details (optional)", btn_cancel: "Cancel", btn_save: "Save",
     lt_title: "Long-term Goals", ph_lt_title: "A long-term goal…", lt_add: "Add", ddl_label: "Due date",
+    lt_modal_new: "New Goal", btn_new_lt: "＋ New Goal",
+    dlg_del_title: "Confirm Delete", dlg_ok: "OK",
     lt_empty: "No goals yet — add one!", lt_add_ms: "＋ Add a step",
     lt_days_left: "{n}d left", lt_overdue: "{n}d overdue", lt_ms_empty: "No steps yet",
     ph_lt_ms: "Add a step…", lt_confirm_del: "Delete goal \"{t}\"?",
@@ -164,8 +167,8 @@ const I18N = {
     sync_state: "Sync version {v} · {d}",
     sync_dirty_yes: "unsynced changes", sync_dirty_no: "up to date",
     sync_bad_file: "Not a valid Schedule Buddy sync file",
-    sync_confirm: "Importing this sync file will overwrite local data (exported {time}, version {v}: {n} events, {m} goals).\nImport anyway?",
-    sync_confirm_dirty: "Warning: this device has unsynced changes that will be overwritten!\n(exported {time}, version {v}: {n} events, {m} goals)\nOverwrite anyway?",
+    sync_confirm: "Importing this sync file will overwrite local data.\n\nExported {time} · version {v}\n{n} events, {m} goals",
+    sync_confirm_dirty: "Warning: this device has unsynced changes that will be overwritten!\n\nExported {time} · version {v}\n{n} events, {m} goals",
     sync_done: "✓ Imported ({n} events, {m} goals)",
     sync_exported: "✓ Exported — send this file to your other device to sync",
     sync_saved: "✓ Saved to your Downloads folder: {p}",
@@ -175,6 +178,7 @@ const I18N = {
     sync_fail: "Sync failed",
     set_pwa: "Install to Home Screen", pwa_install: "Install App", pwa_installed: "Installed ✓",
     pwa_hint: "No install dialog? Use your browser menu: \"Add to Home screen\" / \"Install app\".",
+    tray_event: "＋ Event", tray_goal: "＋ Goal",
   },
 };
 const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -228,13 +232,19 @@ function remindLabel(min) {
 /* ---------- 状态 ---------- */
 let events = [];
 let view = "day";
-let filterCat = "全部";
-let hideDone = false;
 let editingId = null;   // null = 新建，否则为编辑
 let weekAnchor = null;  // 周视图锚点日期
 let longterms = [];     // 长期任务
 let bgVersion = "";     // 背景图缓存戳，"" 表示默认背景
 let reportWeek = null;  // 周报锚点（周一的 Date）
+
+/* 触屏形态（手机 PWA/APK）：CSS 走 body.touch-mode，
+ * 顶栏隐藏、操作按钮改左滑浮现、页面右滑呼出快捷条。
+ * 用类而不是纯 media query，是为了合成事件也能测；
+ * ?touch=1 可在桌面浏览器强制触屏形态（调试/自动化测试用）。 */
+const TOUCH = (typeof matchMedia === "function" && matchMedia("(hover: none)").matches)
+  || new URLSearchParams(location.search).has("touch");
+if (TOUCH) document.body.classList.add("touch-mode");
 
 /* ---------- 数据（全部走 API 门面：电脑版走 Flask，手机/离线版走本地实现） ---------- */
 async function loadEvents() {
@@ -248,19 +258,26 @@ function saveEvent(payload) {
 }
 
 async function toggleDone(ev) {
-  await API.updateEvent(ev.id, { done: !ev.done });
+  // 完成动效：先给卡片加动画类（划线 + 绿点闪 + 微弹），动画走完再落盘刷新
+  const card = document.querySelector(`.event-card[data-id="${ev.id}"]`);
+  if (card && !ev.done) card.classList.add("just-done");
+  await Promise.all([
+    API.updateEvent(ev.id, { done: !ev.done }),
+    new Promise(r => setTimeout(r, 380)),
+  ]);
   await loadEvents();
 }
 
 async function deleteEvent(ev) {
-  if (!confirm(tf("confirm_del", { t: ev.title }))) return;
+  const ok = await uiConfirm({
+    title: t("dlg_del_title"),
+    msg: tf("confirm_del", { t: ev.title }),
+    okText: t("act_del"),
+    danger: true,
+  });
+  if (!ok) return;
   await API.deleteEvent(ev.id);
   await loadEvents();
-}
-
-/* ---------- 筛选 ---------- */
-function filtered(list) {
-  return list.filter(e => !hideDone || !e.done);
 }
 
 /* ---------- 渲染 ---------- */
@@ -269,8 +286,14 @@ function render() {
   $("#view-lt").classList.toggle("hidden", view !== "lt");
   $("#view-ai").classList.toggle("hidden", view !== "ai");
   $("#view-air").classList.toggle("hidden", view !== "air");
-  // 只有日视图需要日程筛选栏
-  document.body.classList.toggle("no-filters", view !== "day");
+  // AI 两个视图不需要"新建"入口（手机端顶栏整个隐藏，桌面上隐藏按钮）
+  document.body.classList.toggle("no-new", view === "ai" || view === "air");
+  const btnNew = $("#btn-new");
+  const newKey = view === "lt" ? "btn_new_lt" : "btn_new";
+  if (btnNew.dataset.i18n !== newKey) {
+    btnNew.dataset.i18n = newKey;
+    btnNew.textContent = t(newKey);
+  }
   if (view === "day") renderDay();
   if (view === "lt") renderLongterms();
   if (view === "ai") scrollChat($("#ai-chat"));
@@ -302,7 +325,7 @@ function renderDay() {
   const dow = DOWS[lang][(dt.getDay() + 6) % 7];
   $("#day-label").textContent = (lang === "zh" ? `${fmtShort(dt)} 星期${dow}` : `${dow}, ${fmtShort(dt)}`)
     + (d === todayStr() ? ` · ${t("today")}` : "");
-  const list = filtered(events.filter(e => e.date === d));
+  const list = events.filter(e => e.date === d);
   $("#day-list").innerHTML = list.length
     ? list.map(eventCardHTML).join("")
     : `<div class="empty"><span class="big">🌤️</span>${t("empty_day")}</div>`;
@@ -317,7 +340,7 @@ function renderWeek() {
   $("#week-label").textContent = `${fmtShort(days[0])} - ${fmtShort(days[6])}`;
   $("#week-grid").innerHTML = days.map(d => {
     const ds = fmtDate(d);
-    const list = filtered(events.filter(e => e.date === ds));
+    const list = events.filter(e => e.date === ds);
     const cls = ds === todayStr() ? " today-col" : "";
     return `
     <div class="week-col${cls}">
@@ -474,6 +497,50 @@ function openModal(ev = null, presetDate = null) {
 }
 function closeModal() { $("#modal-mask").classList.add("hidden"); }
 
+/* ---------- 自定义确认/提示弹窗（替代原生 confirm/alert） ----------
+ * 原生弹窗在手机浏览器里会先显示网址（如 weltspace.github.io）且样式不可控；
+ * 这里用统一的小弹窗：彩点标语义（蓝=确认、红=危险、黄=提醒），Promise 返回结果。 */
+let dlgResolve = null;
+let dlgQueue = Promise.resolve();
+
+function showDlg({ title = "", msg = "", okText, danger = false, dot, hideCancel = false } = {}) {
+  const run = () => new Promise((resolve) => {
+    dlgResolve = resolve;
+    const titleEl = $("#dlg-title");
+    titleEl.textContent = title;
+    titleEl.classList.toggle("hidden", !title);
+    $("#dlg-msg").innerHTML = fmtAiText(msg);  // 转义并保留 \n 换行
+    const ok = $("#dlg-ok");
+    ok.textContent = okText || t("dlg_ok");
+    ok.classList.toggle("danger", danger);
+    $("#dlg-cancel").classList.toggle("hidden", hideCancel);
+    $("#dlg-cancel").textContent = t("btn_cancel");
+    $("#dlg-dot").className = `dlg-dot d-${dot || (danger ? "red" : "blue")}`;
+    $("#dlg-mask").classList.remove("hidden");
+    (hideCancel ? ok : $("#dlg-cancel")).focus();
+  });
+  // 若已有弹窗开着，排队等它结束（同步导入确认可能叠在设置弹窗上）
+  const p = dlgQueue.then(run);
+  dlgQueue = p.catch(() => {});
+  return p;
+}
+function dlgClose(result) {
+  if (!dlgResolve) return;
+  const done = dlgResolve;
+  dlgResolve = null;
+  $("#dlg-mask").classList.add("hidden");
+  done(result);
+}
+function uiConfirm(opts) { return showDlg(opts).then(r => r === true); }
+function uiAlert(msg, opts = {}) { return showDlg({ msg, dot: "amber", hideCancel: true, ...opts }).then(() => {}); }
+$("#dlg-ok").onclick = () => dlgClose(true);
+$("#dlg-cancel").onclick = () => dlgClose(false);
+$("#dlg-mask").onclick = (e) => { if (e.target === e.currentTarget) dlgClose(false); };
+document.addEventListener("keydown", (e) => {
+  if (dlgResolve == null) return;
+  if (e.key === "Escape") { e.preventDefault(); dlgClose(false); }
+});
+
 /* ---------- Toast ---------- */
 function showToast(title, sub) {
   const el = document.createElement("div");
@@ -504,9 +571,12 @@ function applyLang() {
   $$("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   $$(".lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
   $$(".ddl-input").forEach(ddlUpdate);  // 按语言刷新截止日期按钮文字
-  // 欢迎语和示例只填一次，避免覆盖聊天记录
-  const welcome = $("#ai-chat .ai-bubble");
-  if (welcome && !welcome.textContent) welcome.textContent = t("ai_welcome");
+  // 欢迎语跟随语言：还没开始聊天（只有欢迎气泡）时直接换语言重写；聊过就不动历史
+  const chat = $("#ai-chat");
+  if (chat && chat.querySelectorAll(".ai-msg").length === 1) {
+    const welcome = chat.querySelector(".ai-bubble");
+    if (welcome) welcome.textContent = t("ai_welcome");
+  }
   renderAiHints();
   render();
   renderLongterms();
@@ -583,7 +653,7 @@ function renderLongterms() {
   const box = $("#lt-list");
   if (!box) return;
   if (!longterms.length) {
-    box.innerHTML = `<div class="lt-empty">${t("lt_empty")}</div>`;
+    box.innerHTML = `<button type="button" class="lt-empty"><span class="lt-empty-plus">＋</span>${t("lt_empty")}</button>`;
     return;
   }
   box.innerHTML = longterms.map(lt => {
@@ -692,6 +762,7 @@ function openLtEdit(item, lt) {
 
 $("#lt-list").addEventListener("click", async (e) => {
   if (justDragged) return;  // 触屏拖拽刚结束，忽略这次点击
+  if (e.target.closest(".lt-empty")) return openLtModal();  // 空状态点击 = 新建目标
   const item = e.target.closest(".lt-item");
   if (!item) return;
   const lt = longterms.find(x => x.id === item.dataset.lt);
@@ -701,7 +772,13 @@ $("#lt-list").addEventListener("click", async (e) => {
     return openMsRename(item.querySelector(`.lt-ms[data-ms="${e.target.closest(".lt-ms-edit-btn").closest(".lt-ms").dataset.ms}"]`));
   }
   if (e.target.closest(".lt-del-btn")) {
-    if (!confirm(tf("lt_confirm_del", { t: lt.title }))) return;
+    const ok = await uiConfirm({
+      title: t("dlg_del_title"),
+      msg: tf("lt_confirm_del", { t: lt.title }),
+      okText: t("act_del"),
+      danger: true,
+    });
+    if (!ok) return;
     await API.deleteLongterm(lt.id);
     return loadLongterms();
   }
@@ -716,7 +793,7 @@ $("#lt-list").addEventListener("click", async (e) => {
       deadline: item.querySelector(".lt-edit-box .ddl-input").value,
     });
     if (d.ok) return loadLongterms();
-    return alert(d.errors.join("\n"));
+    return uiAlert(d.errors.join("\n"));
   }
   if (e.target.closest(".lt-ms-add-btn")) {
     const input = item.querySelector(".lt-ms-input");
@@ -744,7 +821,12 @@ $("#lt-list").addEventListener("change", async (e) => {
   const item = e.target.closest(".lt-item");
   if (!item) return;
   if (e.target.classList.contains("lt-ms-check")) {
-    await API.updateMilestone(item.dataset.lt, e.target.dataset.ms, { done: e.target.checked });
+    const row = e.target.closest(".lt-ms");
+    if (row && e.target.checked) row.classList.add("just-done");  // 勾选动效
+    await Promise.all([
+      API.updateMilestone(item.dataset.lt, e.target.dataset.ms, { done: e.target.checked }),
+      new Promise(r => setTimeout(r, 380)),
+    ]);
     return loadLongterms();
   }
   if (e.target.classList.contains("ddl-input") && e.target.closest(".lt-ms")) {
@@ -781,20 +863,31 @@ $("#lt-list").addEventListener("focusout", (e) => {
   }, 150);
 });
 
-$("#lt-form").onsubmit = async (e) => {
+/* ---------- 新建长期目标弹窗（入口：顶栏按钮 / 长期任务空状态） ---------- */
+function openLtModal() {
+  $("#lt-m-title").value = "";
+  $("#lt-m-deadline").value = "";
+  ddlUpdate($("#lt-m-deadline"));
+  $("#lt-m-error").classList.add("hidden");
+  $("#lt-modal-mask").classList.remove("hidden");
+  $("#lt-m-title").focus();
+}
+function closeLtModal() { $("#lt-modal-mask").classList.add("hidden"); }
+$("#lt-m-cancel").onclick = closeLtModal;
+$("#lt-modal-mask").onclick = (e) => { if (e.target === e.currentTarget) closeLtModal(); };
+$("#lt-modal-form").onsubmit = async (e) => {
   e.preventDefault();
-  const title = $("#lt-title").value.trim();
+  const title = $("#lt-m-title").value.trim();
   if (!title) return;
-  const d = await API.addLongterm({ title, deadline: $("#lt-deadline").value });
-  if (d.ok) {
-    $("#lt-title").value = "";
-    const dl = $("#lt-deadline");
-    dl.value = "";
-    ddlUpdate(dl);
-    loadLongterms();
-  } else {
-    alert(d.errors.join("\n"));
+  const d = await API.addLongterm({ title, deadline: $("#lt-m-deadline").value });
+  if (!d.ok) {
+    const box = $("#lt-m-error");
+    box.textContent = d.errors.join("；");
+    box.classList.remove("hidden");
+    return;
   }
+  closeLtModal();
+  loadLongterms();
 };
 
 /* ---------- 设置弹窗（语言 / 背景图片 / 软件图标） ---------- */
@@ -808,7 +901,6 @@ function closeSettings() { $("#settings-mask").classList.add("hidden"); }
 $("#btn-settings").onclick = openSettings;
 $("#btn-settings-close").onclick = closeSettings;
 $("#settings-mask").onclick = (e) => { if (e.target === e.currentTarget) closeSettings(); };
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeSettings(); });
 
 /* ---------- 安装到桌面（PWA；仅手机本地模式显示） ---------- */
 let pwaPromptEvent = null;
@@ -867,7 +959,7 @@ function flashMsg(el) {
 
 async function uploadBackground(file) {
   if (!file.type.startsWith("image/")) {
-    alert(t("bg_bad_type"));
+    await uiAlert(t("bg_bad_type"));
     return;
   }
   try {
@@ -912,7 +1004,7 @@ async function applyIconPreview() {
 
 async function uploadIcon(file) {
   if (!file.type.startsWith("image/")) {
-    alert(t("bg_bad_type"));
+    await uiAlert(t("bg_bad_type"));
     return;
   }
   try {
@@ -1110,19 +1202,96 @@ document.addEventListener("touchmove", (e) => {
   if (touchDrag.active) e.preventDefault();
 }, { passive: false });
 
+/* ---------- 触屏交互（body.touch-mode）----------
+ * 手机端顶栏隐藏，交互全靠手势：
+ * ① 页面右滑 → 顶部滑出快捷条（＋日程/＋目标/设置），5 秒自动收起
+ * ② 卡片/子任务左滑 → 操作按钮浮现，右滑或点别处收起
+ * ③ 长按 250ms 拖拽排序不变（横滑先到阈值就走①②，互不干扰） */
+if (TOUCH) {
+  // 长按拖拽失败的头号原因：长按触发了系统文字选择/长按菜单，抢走手势
+  document.addEventListener("contextmenu", (e) => {
+    if (e.target.closest(".lt-item, .lt-ms")) e.preventDefault();
+  });
+
+  /* 页面右滑呼出快捷条 */
+  const tray = $("#quick-tray");
+  let trayTimer = null;
+  function showTray() {
+    tray.classList.add("open");
+    clearTimeout(trayTimer);
+    trayTimer = setTimeout(hideTray, 5000);
+  }
+  function hideTray() { tray.classList.remove("open"); clearTimeout(trayTimer); }
+  $("#qt-event").onclick = () => { hideTray(); openModal(); };
+  $("#qt-goal").onclick = () => { hideTray(); switchView("lt"); openLtModal(); };
+  $("#qt-settings").onclick = () => { hideTray(); openSettings(); };
+
+  let pageSwipe = null;
+  document.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    // 卡片/子任务是行级手势的地盘；交互元素和弹层不触发页面手势
+    if (e.target.closest("input, textarea, select, button, a, .modal-mask, .dlg, .event-card, .lt-item, .lt-ms")) {
+      pageSwipe = null;
+      return;
+    }
+    pageSwipe = { x: e.clientX, y: e.clientY };
+  }, { passive: true });
+  document.addEventListener("pointerup", (e) => {
+    if (!pageSwipe) return;
+    const dx = e.clientX - pageSwipe.x, dy = e.clientY - pageSwipe.y;
+    pageSwipe = null;
+    if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 2) showTray();       // 右滑呼出
+    else if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 2) hideTray(); // 左滑收起
+  }, { passive: true });
+
+  /* 行级左滑浮现操作按钮 */
+  const ROW_SEL = ".event-card, .lt-item, .lt-ms";
+  function closeSwiped(except) {
+    $$(".swiped").forEach(el => { if (el !== except) el.classList.remove("swiped"); });
+  }
+  let rowSwipe = null;
+  document.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    const row = e.target.closest(ROW_SEL);
+    if (!row) { closeSwiped(null); return; }  // 点空白处收起已展开的行
+    if (e.target.closest("input, textarea, select, button, .ddl-pick")) { rowSwipe = null; return; }
+    rowSwipe = { el: row, x: e.clientX, y: e.clientY, locked: false };
+  }, { passive: true });
+  document.addEventListener("pointermove", (e) => {
+    if (!rowSwipe || rowSwipe.locked) return;
+    if (touchDrag.active) { rowSwipe = null; return; }  // 长按拖拽已接管
+    const dx = e.clientX - rowSwipe.x, dy = e.clientY - rowSwipe.y;
+    // 横向意图明确才锁存：竖向留给滚动，长按留给拖拽
+    if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      rowSwipe.locked = true;
+      if (dx < 0) { closeSwiped(rowSwipe.el); rowSwipe.el.classList.add("swiped"); }
+      else rowSwipe.el.classList.remove("swiped");
+    }
+  }, { passive: true });
+  document.addEventListener("pointerup", () => { rowSwipe = null; }, { passive: true });
+  document.addEventListener("pointercancel", () => { rowSwipe = null; }, { passive: true });
+}
+
 /* ---------- 报表翻周（统计视图已移除，接口保留给 agent 用） ---------- */
 
 /* ---------- 事件绑定 ---------- */
-$$(".tab").forEach(tabBtn => tabBtn.onclick = () => {
-  $$(".tab").forEach(x => x.classList.remove("active"));
-  tabBtn.classList.add("active");
-  view = tabBtn.dataset.view;
+function switchView(v) {
+  $$(".tab").forEach(x => x.classList.toggle("active", x.dataset.view === v));
+  view = v;
   render();
-});
-$("#btn-new").onclick = () => openModal();
+}
+$$(".tab").forEach(tabBtn => tabBtn.onclick = () => switchView(tabBtn.dataset.view));
+// 顶栏"新建"按钮：长期任务视图下新建目标，其余视图新建日程（AI 视图按钮整个隐藏）
+$("#btn-new").onclick = () => (view === "lt" ? openLtModal() : openModal());
 $("#btn-cancel").onclick = closeModal;
 $("#modal-mask").onclick = (e) => { if (e.target === e.currentTarget) closeModal(); };
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+// Esc 从上往下关弹窗；确认弹窗开着时不越级关闭（它自己处理 Esc）
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || dlgResolve != null) return;
+  if (!$("#lt-modal-mask").classList.contains("hidden")) return closeLtModal();
+  if (!$("#modal-mask").classList.contains("hidden")) return closeModal();
+  closeSettings();
+});
 
 $("#event-form").onsubmit = async (e) => {
   e.preventDefault();
@@ -1169,7 +1338,6 @@ $("#day-picker").onchange = renderDay;
 $(".day-title").addEventListener("click", () => {
   try { $("#day-picker").showPicker(); } catch (_) { /* 老内核无 showPicker，忽略 */ }
 });
-$("#hide-done").onchange = (e) => { hideDone = e.target.checked; render(); };
 
 /* ---------- AI 助手（对话式安排任务） ---------- */
 const aiHistory = [];
@@ -1527,7 +1695,7 @@ $("#btn-sync-export").onclick = async () => {
     }
     refreshSyncState();
   } catch (e) {
-    alert(t("sync_fail") + (e && e.message ? `：${e.message}` : ""));
+    await uiAlert(t("sync_fail") + (e && e.message ? `：${e.message}` : ""));
   }
 };
 
@@ -1540,7 +1708,7 @@ $("#sync-file").onchange = async (e) => {
   try {
     pkg = JSON.parse(await f.text());
   } catch (_) {
-    return alert(t("sync_bad_file"));
+    return uiAlert(t("sync_bad_file"));
   }
   importSyncObject(pkg);
 };
@@ -1548,24 +1716,25 @@ $("#sync-file").onchange = async (e) => {
 // 导入一个校验过的同步包对象（文件选择器和微信"用日程助手打开"共用）
 async function importSyncObject(pkg) {
   if (!pkg || pkg.kind !== SYNC_KIND || !pkg.data || !Array.isArray(pkg.data.events)) {
-    return alert(t("sync_bad_file"));
+    return uiAlert(t("sync_bad_file"));
   }
   const nEvents = pkg.data.events.length;
   const nLongterms = (pkg.data.longterms || []).length;
   const meta = { time: pkg.exported_at || "?", v: pkg.version ?? 0, n: nEvents, m: nLongterms };
   const s = await API.getSettings();
   const msg = syncDirty(s) ? tf("sync_confirm_dirty", meta) : tf("sync_confirm", meta);
-  if (!confirm(msg)) return;
+  const ok = await uiConfirm({ title: t("sync_import"), msg, danger: true });
+  if (!ok) return;
   try {
     const r = await API.syncImport(pkg);
-    if (!r.ok) return alert(r.errors.join("\n"));
+    if (!r.ok) return uiAlert(r.errors.join("\n"));
     flashMsg($("#sync-msg"));
     $("#sync-msg").textContent = tf("sync_done", { n: nEvents, m: nLongterms });
     refreshSyncState();
     await loadEvents();
     loadLongterms();
   } catch (err) {
-    alert(t("sync_fail") + (err && err.message ? `：${err.message}` : ""));
+    await uiAlert(t("sync_fail") + (err && err.message ? `：${err.message}` : ""));
   }
 }
 
@@ -1575,7 +1744,7 @@ window.__sbReceiveSharedFile = (b64) => {
     const text = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
     importSyncObject(JSON.parse(text));
   } catch (_) {
-    alert(t("sync_bad_file"));
+    uiAlert(t("sync_bad_file"));
   }
 };
 

@@ -74,13 +74,8 @@ body {
 main { padding: 20px 24px 60px; max-width: 1100px; margin: 0 auto; }
 .hidden { display: none !important; }
 
-/* 筛选：在顶栏内（顶栏 flex-wrap 兜底超窄换行），只服务日视图 */
-.filters {
-  display: flex; align-items: center; gap: 12px;
-  flex-wrap: wrap;
-}
-body.no-filters .filters { display: none; }
-.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+/* AI 助手 / AI 分析视图不需要"新建日程"入口 */
+body.no-new #btn-new { display: none; }
 .chip {
   border: 1px solid var(--border); background: var(--card); border-radius: 999px;
   padding: 6px 16px; font-size: 13px; cursor: pointer; color: var(--muted); transition: all .15s;
@@ -89,17 +84,11 @@ body.no-filters .filters { display: none; }
   background: rgba(79, 110, 247, .12); color: var(--primary-dark);
   border-color: var(--primary); font-weight: 600;
 }
-.filter-right { display: flex; align-items: center; gap: 14px; }
 select, input[type="date"], input[type="time"] {
   font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--border);
   border-radius: 8px; background: var(--card); color: var(--text); outline: none;
 }
 select:focus, input:focus { border-color: var(--primary); }
-.toggle {
-  font-size: 13px; color: var(--muted); cursor: pointer; user-select: none;
-  display: inline-flex; align-items: center; gap: 5px;
-}
-.toggle input { margin: 0; accent-color: var(--primary); flex-shrink: 0; }
 
 /* 日导航 */
 .day-nav {
@@ -165,16 +154,19 @@ select:focus, input:focus { border-color: var(--primary); }
 .ev-act:hover { background: rgba(0, 0, 0, .06); color: var(--text); }
 .ev-act.act-done:hover { color: var(--green); background: rgba(16, 185, 129, .12); }
 .ev-act.act-del:hover { color: var(--red); background: rgba(239, 68, 68, .10); }
-@media (hover: none) {
-  /* 触屏（手机 APP/网页）：操作按钮不再悬浮在标题行上（会遮字），
-     改为独占一行放在卡片内容下方、右对齐 */
-  .event-card { flex-wrap: wrap; }
-  .event-card .ev-main { min-width: 0; }
-  .ev-actions {
-    position: static; transform: none; opacity: 1; pointer-events: auto;
-    flex-basis: 100%; justify-content: flex-end;
-    padding: 2px 0 0; background: none; height: auto;
-  }
+/* 触屏（body.touch-mode 由 JS 按 hover:none 加）：操作按钮平时隐藏，
+   卡片左滑浮现（.swiped），右滑/点别处收起 —— 由 main.js 的行级手势模块驱动 */
+body.touch-mode .event-card { flex-wrap: wrap; }
+body.touch-mode .event-card .ev-main { min-width: 0; }
+body.touch-mode .ev-actions {
+  position: static; transform: none;
+  flex-basis: 100%; justify-content: flex-end;
+  background: none; max-height: 0; overflow: hidden;
+  padding: 0 3px; opacity: 0; pointer-events: none;
+  transition: max-height .22s ease, opacity .18s ease, padding .22s ease;
+}
+body.touch-mode .event-card.swiped .ev-actions {
+  max-height: 44px; opacity: 1; pointer-events: auto; padding: 4px 3px 2px;
 }
 .empty {
   text-align: center; color: var(--muted); padding: 60px 0; font-size: 15px;
@@ -269,12 +261,7 @@ select:focus, input:focus { border-color: var(--primary); }
 .lt-item .bar-fill { background: linear-gradient(90deg, #7c9bff, var(--primary)); }
 
 /* ---------- 长期任务视图 ---------- */
-.lt-form { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
-.lt-form input[type="text"] {
-  flex: 1; min-width: 0; font-family: inherit; font-size: 14px;
-  padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; outline: none;
-}
-.lt-form input[type="text"]:focus { border-color: var(--primary); }
+/* 新建入口 = 顶栏按钮（本视图下变为"新建目标"），不再有常驻添加行 */
 .lt-form-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 /* 截止日期选择按钮：隐藏原生日期输入（不显示 yyyy/mm/日），点击弹出系统选择器 */
@@ -293,7 +280,22 @@ select:focus, input:focus { border-color: var(--primary); }
 .ms-ddl .ddl-btn { padding: 3px 8px; font-size: 11.5px; border-radius: 6px; }
 body.has-bg .ddl-btn { background: var(--surface); }
 .lt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
-.lt-empty { grid-column: 1 / -1; font-size: 14px; color: var(--muted); text-align: center; padding: 50px 0; }
+/* 空状态：一句话 + 单一"＋"入口，整块可点（点任意处新建目标） */
+.lt-empty {
+  grid-column: 1 / -1; border: none; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 14px; color: var(--muted); text-align: center;
+  padding: 50px 0; border-radius: var(--radius); transition: color .15s;
+}
+.lt-empty:hover { color: var(--primary); }
+.lt-empty-plus {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin: 0 auto 12px; border-radius: 50%;
+  border: 1.5px dashed var(--border); font-size: 20px; color: var(--muted);
+  transition: all .15s;
+}
+.lt-empty:hover .lt-empty-plus {
+  border-color: var(--primary); color: var(--primary); background: rgba(79, 110, 247, .05);
+}
 .lt-item { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
 .lt-head { display: flex; align-items: center; gap: 8px; position: relative; }
 .lt-title { flex: 1; font-size: 15px; font-weight: 600; word-break: break-all; }
@@ -311,7 +313,9 @@ body.has-bg .ddl-btn { background: var(--surface); }
 }
 .lt-btn svg { width: 14px; height: 14px; }
 .lt-btn:hover { background: rgba(0, 0, 0, .06); color: var(--text); }
-@media (hover: none) { .lt-actions { opacity: 1; } }
+/* 触屏：目标卡操作按钮改为左滑浮现（不再常驻） */
+body.touch-mode .lt-actions { opacity: 0; pointer-events: none; }
+body.touch-mode .lt-item.swiped .lt-actions { opacity: 1; pointer-events: auto; }
 .lt-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); margin: 6px 0; flex-wrap: wrap; }
 .lt-bar { margin: 8px 0 6px; }
 .lt-ms-list { list-style: none; }
@@ -329,7 +333,9 @@ body.has-bg .ddl-btn { background: var(--surface); }
 .ms-due.over { color: var(--red); }
 .ms-ops { display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity .15s; }
 .lt-ms:hover .ms-ops, .lt-ms:focus-within .ms-ops { opacity: 1; }
-@media (hover: none) { .ms-ops { opacity: 1; } }
+/* 触屏：子任务操作图标同样左滑浮现 */
+body.touch-mode .ms-ops { opacity: 0; }
+body.touch-mode .lt-ms.swiped .ms-ops { opacity: 1; }
 /* 日期按钮只显示小图标，不带文字 */
 .ms-ddl .ddl-btn { padding: 2px 5px; border-radius: 6px; font-size: 12px; }
 .ms-ddl .ddl-text { display: none; }
@@ -408,11 +414,11 @@ body.has-bg .stat-card,
 body.has-bg .panel,
 body.has-bg .lt-item,
 body.has-bg .modal,
+body.has-bg .dlg,
 body.has-bg .chip:not(.active),
 body.has-bg select,
 body.has-bg input[type="date"],
 body.has-bg input[type="time"],
-body.has-bg .lt-form input[type="text"],
 body.has-bg .lt-edit-box input[type="text"] { background: var(--surface); }
 body.has-bg .tabs { background: rgba(228, 232, 240, var(--card-alpha)); }
 body.has-bg .tab.active { background: var(--surface); }
@@ -471,11 +477,21 @@ body.has-bg .lt-actions { background: linear-gradient(to right, rgba(255,255,255
 #view-air .ai-input-row { margin-top: auto; padding-top: 10px; }
 .air-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
 .air-error { font-size: 12.5px; color: var(--red); }
-.air-scopes { display: flex; gap: 6px; }
-.air-scope.active {
-  background: rgba(79, 110, 247, .12); color: var(--primary-dark);
-  border-color: var(--primary); font-weight: 600;
+/* scope 选择 = 一段式分段控件（与底部标签栏同一视觉语言），和开始分析稳稳同一行 */
+.air-scopes {
+  display: flex; gap: 4px; background: var(--bg);
+  border-radius: 999px; padding: 4px; min-width: 0;
 }
+.air-scope {
+  border: none; background: transparent; border-radius: 999px;
+  padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--muted);
+  transition: all .15s; white-space: nowrap; font-family: inherit; min-width: 0;
+}
+.air-scope.active {
+  background: var(--card); color: var(--primary-dark); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+}
+body.has-bg .air-scope.active { background: var(--surface); }
 /* 长期分析：各目标进度列表 */
 .air-goal { margin-bottom: 14px; }
 .air-goal:last-child { margin-bottom: 0; }
@@ -563,6 +579,28 @@ body.has-bg .lt-actions { background: linear-gradient(to right, rgba(255,255,255
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-error { color: var(--red); font-size: 13px; margin-bottom: 10px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+/* 新建长期目标弹窗：截止日期一行（按钮本身就是字段，无需标签） */
+.lt-m-ddl { margin: 2px 0 14px; }
+
+/* 确认/提示弹窗（替代原生 confirm/alert）：彩点标语义，小而轻 */
+.dlg-mask { z-index: 70; }
+.dlg {
+  background: var(--card); border-radius: 16px; padding: 20px 22px;
+  width: 330px; max-width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: pop .18s ease;
+}
+/* 背景图模式下比普通卡片更实一点：小弹窗信息密度低，太透会和背后内容混在一起 */
+body.has-bg .dlg { background: rgba(255, 255, 255, min(1, var(--card-alpha) + 0.15)); }
+.dlg-dot { display: block; width: 10px; height: 10px; border-radius: 50%; margin-bottom: 12px; }
+.dlg-dot.d-red { background: var(--red); }
+.dlg-dot.d-blue { background: var(--primary); }
+.dlg-dot.d-amber { background: var(--yellow); }
+.dlg-title { font-size: 15.5px; font-weight: 700; margin-bottom: 6px; }
+.dlg-msg { font-size: 13.5px; line-height: 1.7; color: var(--text); word-break: break-all; }
+.dlg-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+#dlg-ok.danger { background: var(--red); color: #fff; }
+#dlg-ok.danger:hover { background: #dc2626; }
 
 /* Toast 提醒（右下角，避免遮住右侧面板） */
 #toast-box { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
@@ -614,13 +652,31 @@ body.apk-mode #sync-apk-hint { display: block; }
   #view-ai { height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
   #view-air { min-height: calc(100dvh - 190px - env(safe-area-inset-bottom)); }
 
-  /* 顶栏一行放下：筛选（左）＋ ⚙ ＋ 精简新建按钮（右） */
-  .filters { gap: 8px; }
-  .filter-right { gap: 10px; }
-  .filters select { font-size: 12.5px; padding: 6px 4px; }
-  .toggle { font-size: 12px; }
+  /* 窄窗口但非触屏（桌面缩窗）：顶栏还在，"＋"缩成图标 */
   #btn-new { font-size: 0; padding: 9px 11px; }
   #btn-new::before { content: "＋"; font-size: 15px; font-weight: 600; }
+
+  /* 触屏（手机）：顶栏整个隐藏（设置/添加改由页面右滑快捷条提供），
+     内容区更高。topbar 变纯静态壳（.tabs 固定在底部，不能随它消失），
+     必须撤掉 backdrop-filter/定位，否则 fixed 的标签栏钉不住屏幕底部 */
+  body.touch-mode .topbar {
+    position: static; padding: 0; gap: 0;
+    background: none; box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  body.touch-mode .topbar > :not(.tabs) { display: none; }
+  body.touch-mode main { padding-top: 12px; }
+  body.touch-mode #view-ai { height: calc(100dvh - 140px - env(safe-area-inset-bottom)); }
+  body.touch-mode #view-air { min-height: calc(100dvh - 140px - env(safe-area-inset-bottom)); }
+  body.touch-mode .ai-chat { max-height: calc(100dvh - 280px); }
+  body.touch-mode .air-chat { max-height: calc(100dvh - 380px); }
+
+  /* AI 分析：分段控件 + 开始分析 同一行不换行 */
+  .air-top { flex-wrap: nowrap; gap: 8px; }
+  .air-scopes { flex: 1; }
+  .air-scope { flex: 1; padding: 7px 2px; font-size: 12px; text-align: center; }
+  #btn-analyze { flex-shrink: 0; padding: 8px 12px; }
 
   /* 日期导航单行：两端细箭头，中间日期文字（点文字直接唤起系统日期选择器） */
   .day-nav { flex-wrap: nowrap; gap: 6px; }
@@ -660,4 +716,41 @@ body.apk-mode #sync-apk-hint { display: block; }
   /* 触屏拖拽中禁止页面滚动（配合 main.js 的长按拖拽） */
   body.touch-dragging { overflow: hidden; }
 }
+
+/* ---------- 触屏专属（body.touch-mode） ---------- */
+/* 长按拖拽修复：不许长按触发系统文字选择/长按菜单（会抢走手势导致拖不动） */
+body.touch-mode .lt-item,
+body.touch-mode .lt-ms {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 手机快捷操作条：页面右滑呼出，几秒后或左滑收起（顶栏隐藏后的 设置/添加 入口） */
+.quick-tray {
+  position: fixed; top: 10px; left: 14px; right: 14px; z-index: 45;
+  display: none; align-items: center; justify-content: center; gap: 10px;
+  padding: 10px 14px; border-radius: 999px;
+  background: rgba(255, 255, 255, .95);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
+  transform: translateY(-160%); transition: transform .28s ease;
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+}
+body.touch-mode .quick-tray { display: flex; }
+body.touch-mode .quick-tray.open { transform: none; }
+
+/* 完成动效：勾选后微弹一下 + 圆点闪绿光（Apple Reminders 风格的即时反馈） */
+@keyframes done-pop {
+  0% { transform: none; }
+  40% { transform: scale(1.02); }
+  100% { transform: none; }
+}
+@keyframes dot-flash {
+  0% { background: var(--green); box-shadow: 0 0 0 5px rgba(16, 185, 129, .22); }
+  100% { background: var(--muted); box-shadow: none; }
+}
+.event-card.just-done { animation: done-pop .45s ease; }
+.event-card.just-done .ev-dot { animation: dot-flash .8s ease both; }
+.lt-ms.just-done { animation: done-pop .45s ease; }
+.lt-ms.just-done .lt-ms-check { accent-color: var(--green); }
 

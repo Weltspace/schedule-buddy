@@ -4,9 +4,9 @@
 
 A standalone, zero-config, **local-first scheduler**. Three forms, one experience: a **Windows desktop app** (standalone window, no browser), an **Android app** (a real installable APK), and a **mobile web app** (opens in any browser). Events, long-term goals and statistics are always stored on your own device — nothing is ever uploaded.
 
-| Day view | Week view | Stats | Long-term goals |
+| Day view | Long-term goals | AI assistant | AI insights |
 | --- | --- | --- | --- |
-| ![Day](docs/screenshot-day.png) | ![Week](docs/screenshot-week.png) | ![Stats](docs/screenshot-stats.png) | ![Goals](docs/screenshot-goals.png) |
+| ![Day](docs/screenshot-day.png) | ![Goals](docs/screenshot-goals.png) | ![AI assistant](docs/screenshot-ai.png) | ![AI insights](docs/screenshot-insights.png) |
 
 ## 📥 Download (pick your platform)
 
@@ -26,10 +26,10 @@ All packages live under **[GitHub Releases (go to the latest)](https://github.co
 - **AI insights**: nothing runs until you click "Analyze" (zero cost otherwise); get a completion chart, insights and suggestions, then keep asking follow-up questions
 - **Desktop window**: runs as a standalone window (pywebview); clicking × minimizes to the system tray while reminders keep working; quit from the tray menu
 - **Android app**: a real installable APK (~2 MB) — own launcher icon, fullscreen, fully offline, data in the app's private storage; export the sync file straight to WeChat via the share sheet, and open WeChat-received sync files directly in the app
-- **Event management**: create / edit / delete / mark done, with a deliberately minimal interface (tag systems like priorities and categories were removed on purpose)
+- **Event management**: create / edit / delete / mark done, with a deliberately minimal interface (tag systems like priorities and categories were removed on purpose); completing a card gets a subtle animation, deleting asks for a clean confirmation dialog
 - **Reminders**: from 5 minutes to 1 day ahead, delivered as Windows toast notifications; reminders missed by more than 10 minutes are skipped instead of flooding you on startup
 - **Long-term goals**: set goals with optional deadlines (shows "N days left", red when overdue) and per-step deadlines too; drag-and-drop to reorder both goals and steps; progress bars update automatically
-- **Statistics & reports**: completion rate, monthly heatmap, category breakdown, plus a **weekly report** (browse any week, compare with the previous one) and an **overall report** (6-month trend, most productive day)
+- **Rebuilt for touch on mobile**: the top bar folds into gestures — **swipe right** anywhere for the quick tray (＋ event / ＋ goal / Settings); **swipe left** on an event card, goal card or step to reveal its actions; long-press (250 ms) to drag-reorder; completion checks animate
 - **Custom background & icon**: drop an image in Settings — the app background and the icons in the title bar, taskbar, tray, desktop shortcut and Start Menu all update at once; one click to restore defaults
 - **UI language**: switch 中文 / English from the ⚙ Settings menu (your event content stays as-is)
 - **UI opacity**: with a background image set, card opacity is adjustable via a slider
@@ -83,10 +83,10 @@ Double-click `create_desktop_shortcut.py` — it creates a "日程助手" shortc
 
 ## 🖥️ Using the app
 
-- **今天 / This Week**: plan and review events by day or week; hide completed items from the top bar
-- **Stats**: completion rate, monthly heatmap, category breakdown
-- **Weekly / Overall report**: scroll down in Stats — the weekly report browses any week (per-day progress, comparison with last week); the overall report aggregates everything (6-month trend, most productive weekday)
-- **Long-term Goals**: the 4th tab. Type a goal (deadline optional) → Add; each step can have its own deadline via the inline "📅 截止日期" button; drag goal cards and steps to reorder; check steps to grow the progress bar
+- **今天 (Today)**: plan and review events by day; tap the date text to jump to another day
+- **长期任务 (Long-term Goals)**: the 2nd tab — click "＋ 新建目标" in the top bar to create a goal (deadline optional); each step can have its own deadline; drag goal cards and steps to reorder; check steps to grow the progress bar
+- **AI 助手 (AI assistant)**: conversational planning — create events and goals, reschedule, query
+- **AI 分析 (AI insights)**: weekly / monthly / long-term views with completion heatmap, completion ring, charts, insights and suggestions; keep asking follow-up questions afterwards
 
 ## 🎨 Background & icon (the fun part)
 
@@ -100,6 +100,18 @@ You can also drag an image onto `change_icon.py` to change only the icon.
 ## 📱 Mobile version (Android app / web PWA, sync with your PC)
 
 Three ways to run it on a phone; schedule data always lives on the device (AI calls GLM directly from the device).
+
+**Touch gestures (same in the app and the web version):**
+
+| Gesture | Action |
+| --- | --- |
+| **Swipe right** anywhere | Quick tray drops from the top: ＋ event / ＋ goal / Settings |
+| **Swipe left** on an event card | Reveal: done / edit / delete |
+| **Swipe left** on a goal card or step | Reveal: edit / delete (steps include changing the deadline) |
+| **Long-press 250 ms** then drag | Reorder goals and steps |
+
+| ![Mobile](docs/screenshot-mobile.png) |
+| --- |
 
 ### Option 1: Android app (recommended, most complete)
 
